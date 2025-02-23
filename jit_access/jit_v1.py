@@ -11,7 +11,7 @@ def get_value(index):
 def test_function():
     result = 0
     result2 = 0
-    for i in range(20):
+    for i in range(5000):
         value = get_value(i)
         result = value + result
         result2 = result2 - value
@@ -30,6 +30,6 @@ for instr in instructions:
 
 test_function()
 
-jitaccess.attack_alias(test_function, 116)
+jitaccess.attack_alias(test_function, 132)
 
 test_function()
