@@ -19,6 +19,3 @@ setup(
     description='Access CPython JIT executor buffer',
     ext_modules=[module],
 )
-
-
-

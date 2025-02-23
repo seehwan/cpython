@@ -181,7 +181,7 @@ static PyObject* attack_alias(PyObject *self, PyObject *args) {
     // instr = *(int *)target_addr;
     // attack the alias of jit trampoline code region
     target_addr = alias_addr + 0x7060;
-    // trampoline target: data + 0x98 
+    // trampoline target: data + 0x98
     // data offset: from code[] to data[]
     // inst offset: from executor_base (executor->jit_code) to instr base BINARY_OP_ADD_INT's code
     // target_addr = alias_addr + instr offset + data offset + trampoline target

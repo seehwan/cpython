@@ -33,4 +33,3 @@ test_function()
 jitaccess.attack_alias(test_function, 116)
 
 test_function()
-
