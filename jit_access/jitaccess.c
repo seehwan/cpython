@@ -1,9 +1,9 @@
 #define Py_BUILD_CORE
 #include "Python.h"
-#include "pycore_code.h"       // For PyCodeObject and related APIs
-#include "pycore_optimizer.h"  // For _PyExecutorObject
+#include "internal/pycore_code.h"       // For PyCodeObject and related APIs
+#include "internal/pycore_optimizer.h"  // For _PyExecutorObject
 #include "longobject.h"     // For _PyLong_Add
-#include "pycore_long.h"    // For _PyLong_Add definition
+#include "internal/pycore_long.h"    // For _PyLong_Add definition
 
 #include <stdio.h>
 #include <stdlib.h>
