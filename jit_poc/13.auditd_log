@@ -1,0 +1,2 @@
+sudo ausearch -ts recent -x python3.14 | grep -E 'syscall=execve|syscall=mmap|syscall=mprotect|syscall=brk|syscall=ptrace'
+<no matches>

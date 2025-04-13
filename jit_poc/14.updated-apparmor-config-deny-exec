@@ -1,0 +1,35 @@
+#include <tunables/global>
+
+/usr/local/bin/python3.14 {
+    include <abstractions/base>
+
+    deny ptrace,
+
+    deny capability setuid,
+    capability dac_override,
+    capability sys_admin,
+
+    deny /proc/** r,
+    deny /dev/** rw,
+
+    deny /users/seehwan/cpython/jit_poc/** x,
+    deny /proj/sekvmii-PG0/mydata/cpython/jit_poc/** x,
+
+    /usr/local/bin/python3.14 r,
+    /usr/local/lib/python3.14/** r,
+    /usr/local/lib/python3.14/lib-dynload/** mr,
+    /usr/local/lib/python3.14/encodings/** r,
+    /usr/local/lib/python3.14/site-packages/** r,
+
+    /users/seehwan/python-arm64/bin/python3.14 r,
+    /users/seehwan/python-arm64/lib/python3.14/** r,
+    /users/seehwan/python-arm64/lib/python3.14/lib-dynload/** mr,
+    /users/seehwan/python-arm64/lib/python3.14/encodings/** r,
+    /users/seehwan/python-arm64/lib/python3.14/site-packages/** r,
+
+    /users/seehwan/cpython/jit_poc/** r,
+    /users/seehwan/cpython/jit_poc/** w,
+
+    /proj/sekvmii-PG0/mydata/cpython/jit_poc/** r,
+    /proj/sekvmii-PG0/mydata/cpython/jit_poc/** w,
+}

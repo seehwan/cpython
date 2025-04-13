@@ -1,0 +1,1329 @@
+[+] Parsed 265 stencil code blocks (with non-empty code_body)
+
+[+] Preview of disassembled stencils:
+
+emit__BINARY_OP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_ADD_FLOAT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_ADD_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_ADD_UNICODE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x26, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_EXTEND:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_INPLACE_ADD_UNICODE:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x26, #0
+
+emit__BINARY_OP_MULTIPLY_FLOAT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_MULTIPLY_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_SUBSCR_CHECK_FUNC:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x19, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_SUBSCR_DICT:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x25, #0
+
+emit__BINARY_OP_SUBSCR_INIT_CALL:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x9, #0
+
+emit__BINARY_OP_SUBSCR_LIST_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: adrp   x11, #0
+
+emit__BINARY_OP_SUBSCR_STR_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: adrp   x11, #0
+
+emit__BINARY_OP_SUBSCR_TUPLE_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: adrp   x11, #0
+
+emit__BINARY_OP_SUBTRACT_FLOAT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__BINARY_OP_SUBTRACT_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__BINARY_SLICE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__BUILD_LIST:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__BUILD_MAP:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x24, #0
+
+emit__BUILD_SET:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x25, #0
+
+emit__BUILD_SLICE:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x24, #0
+
+emit__BUILD_STRING:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x24, #0
+
+emit__BUILD_TUPLE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__CALL_BUILTIN_CLASS:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x26, #0
+
+emit__CALL_BUILTIN_FAST:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x26, #0
+
+emit__CALL_BUILTIN_FAST_WITH_KEYWORDS:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x26, #0
+
+emit__CALL_BUILTIN_O:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x24, #0
+
+emit__CALL_INTRINSIC_1:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__CALL_INTRINSIC_2:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__CALL_ISINSTANCE:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x25, #0
+
+emit__CALL_KW_NON_PY:
+  0000: sub    sp, sp, #0x30
+  0004: stp    x29, x30, [sp, #0x20]
+  0008: adrp   x26, #0
+
+emit__CALL_LEN:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__CALL_LIST_APPEND:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__CALL_METHOD_DESCRIPTOR_FAST:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x26, #0
+
+emit__CALL_METHOD_DESCRIPTOR_FAST_WITH_KEYWORDS:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x26, #0
+
+emit__CALL_METHOD_DESCRIPTOR_NOARGS:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x24, #0
+
+emit__CALL_METHOD_DESCRIPTOR_O:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x26, #0
+
+emit__CALL_NON_PY_GENERAL:
+  0000: sub    sp, sp, #0x30
+  0004: stp    x29, x30, [sp, #0x20]
+  0008: adrp   x26, #0
+
+emit__CALL_STR_1:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__CALL_TUPLE_1:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__CALL_TYPE_1:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__CHECK_AND_ALLOCATE_OBJECT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__CHECK_ATTR_CLASS:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_ATTR_METHOD_LAZY_DICT:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_ATTR_MODULE_PUSH_KEYS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__CHECK_ATTR_WITH_HINT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__CHECK_CALL_BOUND_METHOD_EXACT_ARGS:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_EG_MATCH:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x25, #0
+
+emit__CHECK_EXC_MATCH:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__CHECK_FUNCTION:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_FUNCTION_EXACT_ARGS:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_FUNCTION_VERSION:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_FUNCTION_VERSION_INLINE:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_FUNCTION_VERSION_KW:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_IS_NOT_PY_CALLABLE:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_IS_NOT_PY_CALLABLE_KW:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_MANAGED_OBJECT_HAS_VALUES:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__CHECK_METHOD_VERSION:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x10, [x8]
+
+emit__CHECK_METHOD_VERSION_KW:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_PEP_523:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_PERIODIC:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__CHECK_PERIODIC_IF_NOT_YIELD_FROM:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__CHECK_STACK_SPACE:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_STACK_SPACE_OPERAND:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__CHECK_VALIDITY:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__CHECK_VALIDITY_AND_SET_IP:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__COMPARE_OP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__COMPARE_OP_FLOAT:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x25, #0
+
+emit__COMPARE_OP_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__COMPARE_OP_STR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x27, #0
+  0008: mov    x29, sp
+
+emit__CONTAINS_OP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__CONTAINS_OP_DICT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: adrp   x9, #0
+
+emit__CONTAINS_OP_SET:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__CONVERT_VALUE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__COPY:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__COPY_FREE_VARS:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x19, #0
+
+emit__CREATE_INIT_FRAME:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__DELETE_ATTR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__DELETE_DEREF:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__DELETE_FAST:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__DELETE_GLOBAL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__DELETE_NAME:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__DELETE_SUBSCR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__DEOPT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__DICT_MERGE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__DICT_UPDATE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__END_FOR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__END_SEND:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__ERROR_POP_N:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__EXIT_INIT_CHECK:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__EXIT_TRACE:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x24, #0
+
+emit__EXPAND_METHOD:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__EXPAND_METHOD_KW:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__FATAL_ERROR:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__FORMAT_SIMPLE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x8, x21
+
+emit__FORMAT_WITH_SPEC:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__FOR_ITER_GEN_FRAME:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__FOR_ITER_TIER_TWO:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x19, #0
+  0008: mov    x29, sp
+
+emit__GET_AITER:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__GET_ANEXT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GET_AWAITABLE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__GET_ITER:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__GET_LEN:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GET_YIELD_FROM_ITER:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__GUARD_BINARY_OP_EXTEND:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x19, #0
+  0008: mov    x29, sp
+
+emit__GUARD_BOTH_FLOAT:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_BOTH_INT:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_BOTH_UNICODE:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_BUILTINS_VERSION_PUSH_KEYS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GUARD_DORV_NO_DICT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GUARD_DORV_VALUES_INST_ATTR_FROM_DICT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GUARD_GLOBALS_VERSION:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_GLOBALS_VERSION_PUSH_KEYS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GUARD_IS_FALSE_POP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GUARD_IS_NONE_POP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__GUARD_IS_NOT_NONE_POP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__GUARD_IS_TRUE_POP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GUARD_KEYS_VERSION:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_NOS_FLOAT:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_NOS_INT:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_NOT_EXHAUSTED_LIST:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GUARD_NOT_EXHAUSTED_RANGE:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_NOT_EXHAUSTED_TUPLE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__GUARD_TOS_FLOAT:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_TOS_INT:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_TYPE_VERSION:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__GUARD_TYPE_VERSION_AND_LOCK:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__IMPORT_FROM:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__IMPORT_NAME:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x26, #0
+  0008: mov    x29, sp
+
+emit__INIT_CALL_BOUND_METHOD_EXACT_ARGS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: adrp   x24, #0
+
+emit__INIT_CALL_PY_EXACT_ARGS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x19, x21
+
+emit__INIT_CALL_PY_EXACT_ARGS_0:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__INIT_CALL_PY_EXACT_ARGS_1:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__INIT_CALL_PY_EXACT_ARGS_2:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__INIT_CALL_PY_EXACT_ARGS_3:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__INIT_CALL_PY_EXACT_ARGS_4:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__IS_NONE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__IS_OP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__ITER_CHECK_LIST:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__ITER_CHECK_RANGE:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__ITER_CHECK_TUPLE:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__ITER_NEXT_LIST:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__ITER_NEXT_RANGE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__ITER_NEXT_TUPLE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__JUMP_TO_TOP:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__LIST_APPEND:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x8, x21
+
+emit__LIST_EXTEND:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x25, #0
+
+emit__LOAD_ATTR_CLASS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: adrp   x23, #0
+
+emit__LOAD_ATTR_INSTANCE_VALUE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_METHOD_LAZY_DICT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_METHOD_NO_DICT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_METHOD_WITH_VALUES:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_MODULE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_MODULE_FROM_KEYS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_NONDESCRIPTOR_NO_DICT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_NONDESCRIPTOR_WITH_VALUES:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_PROPERTY_FRAME:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_SLOT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__LOAD_ATTR_WITH_HINT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x19, x21
+
+emit__LOAD_BUILD_CLASS:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x8, #0
+
+emit__LOAD_COMMON_CONSTANT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_CONST_IMMORTAL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_CONST_INLINE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: adrp   x19, #0
+
+emit__LOAD_CONST_INLINE_BORROW:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_CONST_MORTAL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_DEREF:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_0:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_1:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_2:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_3:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_4:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_5:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_6:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_7:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_AND_CLEAR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FAST_CHECK:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_FROM_DICT_OR_DEREF:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x25, #0
+
+emit__LOAD_GLOBAL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_GLOBAL_BUILTINS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_GLOBAL_BUILTINS_FROM_KEYS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__LOAD_GLOBAL_MODULE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_GLOBAL_MODULE_FROM_KEYS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__LOAD_LOCALS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__LOAD_NAME:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_SMALL_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_SMALL_INT_0:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_SMALL_INT_1:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_SMALL_INT_2:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_SMALL_INT_3:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__LOAD_SPECIAL:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x8, #0
+
+emit__LOAD_SUPER_ATTR_ATTR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x27, #0
+  0008: mov    x29, sp
+
+emit__LOAD_SUPER_ATTR_METHOD:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x27, #0
+
+emit__MAKE_CALLARGS_A_TUPLE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__MAKE_CELL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__MAKE_FUNCTION:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__MAKE_WARM:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__MAP_ADD:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__MATCH_CLASS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x27, #0
+  0008: mov    x29, sp
+
+emit__MATCH_KEYS:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__MATCH_MAPPING:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__MATCH_SEQUENCE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__MAYBE_EXPAND_METHOD:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__MAYBE_EXPAND_METHOD_KW:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__NOP:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__POP_EXCEPT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__POP_TOP:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__POP_TOP_LOAD_CONST_INLINE_BORROW:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__PUSH_EXC_INFO:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__PUSH_FRAME:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x8, x20
+
+emit__PUSH_NULL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__PUSH_NULL_CONDITIONAL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__PY_FRAME_GENERAL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x29, sp
+
+emit__PY_FRAME_KW:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x8, #0
+
+emit__REPLACE_WITH_TRUE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__RESUME_CHECK:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__RETURN_GENERATOR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__RETURN_VALUE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__SAVE_RETURN_OFFSET:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__SEND_GEN_FRAME:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x9, [x8]
+
+emit__SETUP_ANNOTATIONS:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x23, #0
+
+emit__SET_ADD:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__SET_FUNCTION_ATTRIBUTE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x9, #0
+  0008: mov    x8, x21
+
+emit__SET_IP:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__SET_UPDATE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__START_EXECUTOR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_ATTR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x26, #0
+  0008: mov    x29, sp
+
+emit__STORE_ATTR_INSTANCE_VALUE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__STORE_ATTR_SLOT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__STORE_ATTR_WITH_HINT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: mov    x29, sp
+
+emit__STORE_DEREF:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST_0:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST_1:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST_2:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST_3:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST_4:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST_5:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST_6:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_FAST_7:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__STORE_GLOBAL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__STORE_NAME:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__STORE_SLICE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x26, #0
+  0008: mov    x29, sp
+
+emit__STORE_SUBSCR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x26, #0
+  0008: mov    x29, sp
+
+emit__STORE_SUBSCR_DICT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__STORE_SUBSCR_LIST_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x25, #0
+  0008: adrp   x10, #0
+
+emit__SWAP:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__TIER2_RESUME_CHECK:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
+emit__TO_BOOL:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__TO_BOOL_BOOL:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__TO_BOOL_INT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: adrp   x10, #0
+
+emit__TO_BOOL_LIST:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: adrp   x8, #0
+
+emit__TO_BOOL_NONE:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__TO_BOOL_STR:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: adrp   x10, #0
+
+emit__UNARY_INVERT:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__UNARY_NEGATIVE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__UNARY_NOT:
+  0000: adrp   x8, #0
+  0004: ldr    x8, [x8]
+  0008: ldr    x8, [x8]
+
+emit__UNPACK_EX:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__UNPACK_SEQUENCE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x24, #0
+  0008: mov    x29, sp
+
+emit__UNPACK_SEQUENCE_LIST:
+  0000: sub    sp, sp, #0x30
+  0004: stp    x29, x30, [sp, #0x20]
+  0008: adrp   x23, #0
+
+emit__UNPACK_SEQUENCE_TUPLE:
+  0000: sub    sp, sp, #0x20
+  0004: stp    x29, x30, [sp, #0x10]
+  0008: adrp   x23, #0
+
+emit__UNPACK_SEQUENCE_TWO_TUPLE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x23, #0
+  0008: mov    x29, sp
+
+emit__WITH_EXCEPT_START:
+  0000: sub    sp, sp, #0x40
+  0004: stp    x29, x30, [sp, #0x30]
+  0008: adrp   x28, #0
+
+emit__YIELD_VALUE:
+  0000: stp    x29, x30, [sp, #-0x10]!
+  0004: adrp   x8, #0
+  0008: mov    x29, sp
+
