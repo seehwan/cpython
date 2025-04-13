@@ -1,68 +1,75 @@
 import os
 import json
+from collections import defaultdict, Counter
 import matplotlib.pyplot as plt
-from collections import defaultdict
 
-INPUT_DIR = "jit_random_logs"
-SUMMARY_TXT = "jit_gadget_offset_summary.txt"
-PLOT_FILE = "jit_gadget_offset_histogram.png"
+LOG_DIR = "jit_random_logs"
+OUTPUT_TXT = "jit_analysis_summary.txt"
 
-GADGET_TYPES = ["ret", "br_x16", "ldr_x16"]
-
-def parse_json_logs():
-    data = defaultdict(lambda: defaultdict(list))  # magic → gadget_type → [offsets]
-    for fname in os.listdir(INPUT_DIR):
-        if not fname.endswith(".json"):
+def load_all_entries():
+    all_entries = []
+    for fname in os.listdir(LOG_DIR):
+        if not fname.endswith(".jsonl"):
             continue
-        path = os.path.join(INPUT_DIR, fname)
-        with open(path) as f:
+        with open(os.path.join(LOG_DIR, fname)) as f:
             for line in f:
-                try:
-                    entry = json.loads(line.strip())
-                    magic = entry["magic"]
-                    for gadget, infos in entry["gadgets"].items():
-                        for g in infos:
-                            offset = int(g["offset"], 16)
-                            data[magic][gadget].append(offset)
-                except Exception as e:
-                    print(f"Failed to parse line in {fname}: {e}")
-    return data
+                all_entries.append(json.loads(line.strip()))
+    return all_entries
 
-def save_text_summary(data):
-    with open(SUMMARY_TXT, "w") as f:
-        for magic in sorted(data.keys()):
-            f.write(f"=== [ Magic: {magic} ] ===\n")
-            for gadget in GADGET_TYPES:
-                offsets = data[magic][gadget]
-                f.write(f"  {gadget:8}: {len(offsets)} gadgets\n")
-                if offsets:
-                    samples = ", ".join(hex(o) for o in sorted(offsets[:5]))
-                    f.write(f"    Sample offsets: {samples} ...\n")
-            f.write("\n")
+def summarize(entries):
+    addr_counter = Counter()
+    gadget_counter = defaultdict(int)
+    offset_histogram = defaultdict(list)
+    magic_counts = defaultdict(int)
 
-def plot_histograms(data):
-    fig, axs = plt.subplots(len(GADGET_TYPES), 1, figsize=(10, 4 * len(GADGET_TYPES)))
-    for i, gadget in enumerate(GADGET_TYPES):
-        ax = axs[i]
-        for magic in sorted(data.keys()):
-            offsets = data[magic][gadget]
-            if not offsets:
-                continue
-            ax.hist(offsets, bins=32, alpha=0.6, label=magic, histtype='stepfilled')
-        ax.set_title(f"Gadget Offset Histogram: {gadget}")
-        ax.set_xlabel("Offset (bytes)")
-        ax.set_ylabel("Frequency")
-        ax.legend()
-    plt.tight_layout()
-    plt.savefig(PLOT_FILE)
-    print(f"[+] Saved histogram to {PLOT_FILE}")
+    for entry in entries:
+        magic = entry["magic"]
+        magic_counts[magic] += 1
+        addr_counter[entry["jit_addr"]] += 1
+
+        for gtype, offsets in entry["gadgets"].items():
+            gadget_counter[gtype] += len(offsets)
+            for off in offsets:
+                offset = int(off, 16) - int(entry["jit_addr"], 16)
+                offset_histogram[gtype].append(offset)
+
+    return addr_counter, gadget_counter, magic_counts, offset_histogram
+
+def print_summary(addr_counter, gadget_counter, magic_counts, offset_histogram):
+    with open(OUTPUT_TXT, "w") as f:
+        def out(line=""):
+            print(line)
+            f.write(line + "\n")
+
+        out("=== [ JIT Randomization Summary ] ===")
+        out(f"Total entries        : {sum(magic_counts.values())}")
+        out(f"Unique JIT addresses : {len(addr_counter)}")
+        out(f"Gadget type count    : {dict(gadget_counter)}")
+        out(f"Magic run count      : {dict(magic_counts)}\n")
+
+        out("=== [ Sample Gadget Offsets per Type ] ===")
+        for gtype, offsets in offset_histogram.items():
+            out(f"  {gtype} ({len(offsets)} offsets):")
+            sample = sorted(offsets)[:5]
+            out(f"    Sample offsets: {sample}\n")
+
+def plot_offset_histograms(offset_histogram):
+    for gtype, offsets in offset_histogram.items():
+        if not offsets:
+            continue
+        plt.figure()
+        plt.hist(offsets, bins=50, edgecolor='black')
+        plt.title(f"Gadget Offset Distribution: {gtype}")
+        plt.xlabel("Offset (bytes)")
+        plt.ylabel("Frequency")
+        plt.grid(True)
+        plt.savefig(f"{gtype}_offset_histogram.png")
 
 def main():
-    print("[*] Analyzing gadget offsets...")
-    data = parse_json_logs()
-    save_text_summary(data)
-    plot_histograms(data)
-    print(f"[+] Saved summary to {SUMMARY_TXT}")
+    entries = load_all_entries()
+    addr_counter, gadget_counter, magic_counts, offset_histogram = summarize(entries)
+    print_summary(addr_counter, gadget_counter, magic_counts, offset_histogram)
+    plot_offset_histograms(offset_histogram)
 
 if __name__ == "__main__":
     main()
