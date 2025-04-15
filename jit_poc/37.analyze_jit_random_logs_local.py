@@ -10,7 +10,7 @@ def analyze(directory):
     gadget_types = ["br_x16", "ret", "ldr_x16"]
 
     for fname in sorted(os.listdir(directory)):
-        if not fname.endswith(".json"):
+        if not fname.endswith(".jsonl"):
             continue
         with open(os.path.join(directory, fname)) as f:
             lines = f.readlines()
