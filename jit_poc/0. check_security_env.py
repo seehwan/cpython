@@ -41,7 +41,7 @@ def check_auditd():
             print_status("Auditd", True)
 
         # Check rules
-        rules = subprocess.check_output(["auditctl", "-l"]).decode()
+        rules = subprocess.check_output(["sudo", "auditctl", "-l"]).decode()
         if "-S mmap" in rules:
             print_status("Auditd rules", True)
         else:
