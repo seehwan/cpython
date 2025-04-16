@@ -1,59 +1,66 @@
-#0. check_security_env.py
-import os
 import subprocess
-from pathlib import Path
+import os
+import shutil
 
-def check_apparmor_enabled():
+def print_status(name, status, msg=""):
+    icon = "✅ OK" if status else f"❌ {msg}"
+    print(f"[{name:<10}] {icon}")
+
+def check_apparmor():
     try:
-        output = subprocess.check_output(["aa-status"], stderr=subprocess.DEVNULL).decode()
-        enforce_lines = [line for line in output.splitlines() if "enforce" in line]
-        python_line = [line for line in output.splitlines() if "/usr/local/bin/python3.14" in line]
-        return ("enforce" in output, len(python_line) > 0)
-    except Exception:
-        return (False, False)
+        output = subprocess.check_output(["aa-status"], stderr=subprocess.STDOUT).decode()
+        enforce = "profiles are in enforce mode" in output
+        has_profile = "/usr/local/bin/python3.14" in output
+        print_status("AppArmor", enforce, "not enforcing")
+        print_status("AppArmor profile", has_profile, "Not found")
+    except Exception as e:
+        print_status("AppArmor", False, f"Error: {e}")
 
-def check_seccomp_status():
+def check_seccomp():
     try:
         with open("/proc/self/status") as f:
             for line in f:
                 if line.startswith("Seccomp:"):
-                    mode = int(line.strip().split()[-1])
-                    return mode
-        return -1
-    except Exception:
-        return -1
+                    mode = int(line.strip().split()[1])
+                    print_status("Seccomp", mode == 0, f"Mode {mode}")
+                    return
+        print_status("Seccomp", False, "Not found")
+    except Exception as e:
+        print_status("Seccomp", False, f"Error: {e}")
 
-def check_auditd_status():
+def check_auditd():
+    print("[Auditd     ] Checking status...")
     try:
-        output = subprocess.check_output(["auditctl", "-s"], stderr=subprocess.DEVNULL).decode()
-        return "enabled 1" in output
-    except Exception:
-        return False
+        result = subprocess.run(["systemctl", "is-active", "auditd"],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.returncode != 0:
+            print_status("Auditd", False, "Not running. Trying install...")
+            install_auditd()
+        else:
+            print_status("Auditd", True)
 
-def check_audit_rules():
-    try:
-        output = subprocess.check_output(["auditctl", "-l"], stderr=subprocess.DEVNULL).decode()
-        important = ["mmap", "mprotect", "ptrace"]
-        found = [s for s in important if s in output]
-        return found
-    except Exception:
-        return []
+        # Check rules
+        rules = subprocess.check_output(["auditctl", "-l"]).decode()
+        if "-S mmap" in rules:
+            print_status("Auditd rules", True)
+        else:
+            print_status("Auditd rules", False, "No syscall rules")
+    except Exception as e:
+        print_status("Auditd", False, f"Error: {e}")
 
-def print_summary():
+def install_auditd():
+    if not shutil.which("auditd"):
+        print("[Install    ] Installing auditd...")
+        subprocess.call(["sudo", "apt-get", "update"])
+        subprocess.call(["sudo", "apt-get", "install", "-y", "auditd", "audispd-plugins"])
+    subprocess.call(["sudo", "systemctl", "enable", "--now", "auditd"])
+    subprocess.call(["sudo", "auditctl", "-a", "exit,always", "-F", "arch=b64", "-S", "mmap", "-S", "mprotect", "-S", "ptrace", "-k", "jit-experiment"])
+
+def main():
     print("=== [ Trampoline Overwrite Experiment Pre-Check ] ===")
-
-    aa_enforce, aa_profile = check_apparmor_enabled()
-    print(f"[AppArmor] enforce mode: {'✅ OK' if aa_enforce else '❌ Not enforced'}")
-    print(f"[AppArmor] python3.14 profile loaded: {'✅ OK' if aa_profile else '❌ Not found'}")
-
-    seccomp = check_seccomp_status()
-    print(f"[Seccomp] Mode: {seccomp} → {'✅ OK' if seccomp in [0,2] else '❌'}")
-
-    audit_on = check_auditd_status()
-    print(f"[Auditd] Status: {'✅ enabled' if audit_on else '❌ not enabled'}")
-
-    rules = check_audit_rules()
-    print(f"[Auditd] Syscall rules: {'✅ ' + ', '.join(rules) if rules else '❌ none'}")
+    check_apparmor()
+    check_seccomp()
+    check_auditd()
 
 if __name__ == "__main__":
-    print_summary()
+    main()
