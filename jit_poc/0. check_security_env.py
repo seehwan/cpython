@@ -1,21 +1,15 @@
 import subprocess
 import os
-import shutil
-
-def print_status(name, status, msg=""):
-    icon = "✅ OK" if status else f"❌ {msg}"
-    print(f"[{name:<10}] {icon}")
 
 def check_apparmor():
-    print("[AppArmor   ] Checking status (user mode)...")
     try:
         output = subprocess.check_output(["aa-status"], stderr=subprocess.STDOUT).decode()
-        enforce = "profiles are in enforce mode" in output
-        has_profile = "/usr/local/bin/python3.14" in output
-        print_status("AppArmor", enforce, "not enforcing")
-        print_status("AppArmor profile", has_profile, "Not found")
+        enforce_mode = "profiles are in enforce mode" in output
+        python_profile = "/usr/local/bin/python3.14" in output
+        print("[AppArmor   ] ✅ OK" if enforce_mode else "[AppArmor   ] ❌ Not in enforce mode")
+        print("[AppArmor profile] ✅ OK" if python_profile else "[AppArmor profile] ❌ Not loaded")
     except Exception as e:
-        print_status("AppArmor", False, f"Error: {e}")
+        print(f"[AppArmor   ] ❌ Error: {e}")
 
 def check_seccomp():
     try:
@@ -23,48 +17,47 @@ def check_seccomp():
             for line in f:
                 if line.startswith("Seccomp:"):
                     mode = int(line.strip().split()[1])
-                    print_status("Seccomp", mode == 0, f"Mode {mode}")
+                    if mode == 0:
+                        print("[Seccomp   ] ✅ OK (disabled)")
+                    elif mode == 1:
+                        print("[Seccomp   ] ⚠️  Strict mode")
+                    elif mode == 2:
+                        print("[Seccomp   ] ⚠️  Filter mode")
+                    else:
+                        print(f"[Seccomp   ] ❓ Unknown mode: {mode}")
                     return
-        print_status("Seccomp", False, "Not found")
+        print("[Seccomp   ] ❌ Not found")
     except Exception as e:
-        print_status("Seccomp", False, f"Error: {e}")
+        print(f"[Seccomp   ] ❌ Error: {e}")
 
 def check_auditd():
-    print("[Auditd     ] Checking status...")
     try:
-        result = subprocess.run(["systemctl", "is-active", "auditd"],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if result.returncode != 0:
-            print_status("Auditd", False, "Not running. Trying install...")
-            install_auditd()
+        output = subprocess.check_output(["pidof", "auditd"]).decode().strip()
+        if output:
+            print("[Auditd     ] ✅ OK")
         else:
-            print_status("Auditd", True)
+            print("[Auditd     ] ❌ Not running")
+    except subprocess.CalledProcessError:
+        print("[Auditd     ] ❌ Not running")
 
-        # Check rules
-        rules = subprocess.check_output(["sudo", "auditctl", "-l"]).decode()
-        if "-S mmap" in rules:
-            print_status("Auditd rules", True)
+def check_auditd_rules():
+    try:
+        cmd = ["auditctl", "-l"]
+        if os.geteuid() != 0:
+            cmd.insert(0, "sudo")
+        rules = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode()
+        if "-S " in rules or "-a always" in rules:
+            print("[Auditd rules] ✅ Found syscall rules")
         else:
-            print_status("Auditd rules", False, "No syscall rules")
+            print("[Auditd rules] ❌ No syscall rules")
+    except subprocess.CalledProcessError as e:
+        print(f"[Auditd rules] ❌ Error: {e.output.decode().strip()}")
     except Exception as e:
-        print_status("Auditd", False, f"Error: {e}")
+        print(f"[Auditd rules] ❌ Exception: {e}")
 
-def install_auditd():
-    if not shutil.which("auditd"):
-        print("[Install    ] Installing auditd...")
-        subprocess.call(["sudo", "apt-get", "update"])
-        subprocess.call(["sudo", "apt-get", "install", "-y", "auditd", "audispd-plugins"])
-    subprocess.call(["sudo", "systemctl", "enable", "--now", "auditd"])
-    subprocess.call([
-        "sudo", "auditctl", "-a", "exit,always",
-        "-F", "arch=b64", "-S", "mmap", "-S", "mprotect", "-S", "ptrace", "-k", "jit-experiment"
-    ])
-
-def main():
+if __name__ == "__main__":
     print("=== [ Trampoline Overwrite Experiment Pre-Check ] ===")
     check_apparmor()
     check_seccomp()
     check_auditd()
-
-if __name__ == "__main__":
-    main()
+    check_auditd_rules()
