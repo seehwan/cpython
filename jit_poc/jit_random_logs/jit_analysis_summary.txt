@@ -1,0 +1,16 @@
+=== [ JIT Randomization Summary ] ===
+Total entries        : 800
+Unique JIT addresses : 799
+Gadget type count    : {'ret': 6400, 'br_x16': 1600, 'ldr_x16': 14400}
+Magic run count      : {'0xffffffff': 100, '0xdeadbeef': 100, '0xf0f0f0f0': 100, '0xaaaaaaaa': 100, '0x55555555': 100, '0x0f0f0f0f': 100, '0x0000ffff': 100, '0xffff0000': 100}
+
+=== [ Sample Gadget Offsets per Type ] ===
+  ret (6400 offsets):
+    Sample offsets: [93820835562996, 93820835563232, 93820835563292, 93820835563352, 93820835563428]
+
+  br_x16 (1600 offsets):
+    Sample offsets: [93820835563288, 93820835563348, 93820890441496, 93820890441556, 93820908939032]
+
+  ldr_x16 (14400 offsets):
+    Sample offsets: [93820835561208, 93820835561424, 93820835561476, 93820835561500, 93820835561524]
+
