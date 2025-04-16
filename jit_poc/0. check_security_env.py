@@ -7,6 +7,7 @@ def print_status(name, status, msg=""):
     print(f"[{name:<10}] {icon}")
 
 def check_apparmor():
+    print("[AppArmor   ] Checking status (user mode)...")
     try:
         output = subprocess.check_output(["aa-status"], stderr=subprocess.STDOUT).decode()
         enforce = "profiles are in enforce mode" in output
@@ -54,7 +55,10 @@ def install_auditd():
         subprocess.call(["sudo", "apt-get", "update"])
         subprocess.call(["sudo", "apt-get", "install", "-y", "auditd", "audispd-plugins"])
     subprocess.call(["sudo", "systemctl", "enable", "--now", "auditd"])
-    subprocess.call(["sudo", "auditctl", "-a", "exit,always", "-F", "arch=b64", "-S", "mmap", "-S", "mprotect", "-S", "ptrace", "-k", "jit-experiment"])
+    subprocess.call([
+        "sudo", "auditctl", "-a", "exit,always",
+        "-F", "arch=b64", "-S", "mmap", "-S", "mprotect", "-S", "ptrace", "-k", "jit-experiment"
+    ])
 
 def main():
     print("=== [ Trampoline Overwrite Experiment Pre-Check ] ===")
