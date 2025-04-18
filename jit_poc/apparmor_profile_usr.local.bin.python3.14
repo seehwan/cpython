@@ -4,13 +4,14 @@
     include <abstractions/base>
     deny capability,
     allow capability dac_override,
+    allow capability dac_read_search,
     allow capability sys_admin,
 
     deny /proc/** r,
     deny /dev/** rw,
 
     /usr/local/bin/python3.14 rix,
-    /usr/local/lib/python3.14/** r,
+    /usr/local/lib/python3.14/** rix,
     /usr/local/lib/python3.14/lib-dynload/** r,
     /users/seehwan/cpython/** rix,
     /users/seehwan/python-arm64/bin/** rix,
