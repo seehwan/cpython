@@ -2,7 +2,6 @@
 import ctypes
 import json
 import mmap
-import multiprocessing
 import os
 import struct
 import sys
@@ -13,8 +12,7 @@ import jitexecleak
 from typing import Tuple, Dict, Any, Optional
 
 # Constants
-NUM_ITERATIONS = 100
-NUM_PROCESSES = 8
+NUM_ITERATIONS = 1
 MAGIC = 0xDEADBEEF
 PAGE_SIZE = 0x1000
 PROT_READ = 1
@@ -23,7 +21,7 @@ PROT_EXEC = 4
 MAP_PRIVATE = 2
 MAP_ANONYMOUS = 0x20
 
-# Lightweight shellcode: write "OK" to stdout and exit
+# Shellcode that prints "OK" and exits
 OK_EXIT_CODE = (
     b"\x20\x00\x80\xd2"      # 0x00: movz x0, #1        ; stdout
     b"\xe1\x00\x00\x10"      # 0x04: adr x1, #0x20      ; → 0x28
@@ -37,7 +35,7 @@ OK_EXIT_CODE = (
 )
 
 # JIT Function Management
-def make_combo_func(magic: int):
+def make_combo_func(magic):
     def combo(x: int, s: str):
         acc = x
         g = b'\x00\x02\x1f\xd6'.decode('latin1')
@@ -51,7 +49,7 @@ def make_combo_func(magic: int):
     return combo
 
 def get_jit_code_address(combo) -> Optional[int]:
-    for _ in range(6000):
+    for i in range(6000):
         combo(42, "123AA")
     return jitexecleak.leak_executor_jit(combo)
 
@@ -82,7 +80,10 @@ def allocate_and_load_shellcode() -> int:
     ctypes.memmove(shell_addr, null_buffer, mmap.PAGESIZE)
     
     # 3. Load shellcode
-    ctypes.memmove(shell_addr, OK_EXIT_CODE, len(OK_EXIT_CODE))
+    with open("shellcode.bin", "rb") as f:
+        shellcode = f.read()
+    ctypes.memmove(shell_addr, shellcode, len(shellcode))
+    #ctypes.memmove(shell_addr, OK_EXIT_CODE, len(OK_EXIT_CODE))
     return shell_addr
 
 def mprotect_rwX(addr: int, size: int = 0x1000):
@@ -147,7 +148,7 @@ def jump_to_trampoline(jit_addr: int, trampoline: bytes, shell_addr: int, before
     return log["status"], log
 
 # Logging and Results
-def dump_jit_region_to_log(jit_addr: int, output_dir: pathlib.Path, run_id: int) -> str:
+def dump_jit_region_to_log(jit_addr: int, output_dir: pathlib.Path, run_id: int):
     maps_path = "/proc/self/maps"
     log_path = output_dir / f"jit_maps_snapshot_{run_id}.txt"
     with open(maps_path, "r") as f, open(log_path, "w") as out:
@@ -203,17 +204,17 @@ def process_results(results, output_dir: pathlib.Path):
 # Main Execution
 def run_once(run_id: int, output_dir: pathlib.Path) -> Tuple[str, Dict[str, Any]]:
     try:
-        # 0. Allocate memory and load shellcode
-        shell_addr = allocate_and_load_shellcode()
-        
         # 1. Create and measure JIT function
         combo = make_combo_func(MAGIC)
         exec_start = time.time()
         combo(42, "123AA")
         exec_end = time.time()
         before_jit_latency = exec_end - exec_start
+
+        # 2. Allocate memory and load shellcode
+        shell_addr = allocate_and_load_shellcode()
         
-        # 2. Obtain JIT address
+        # 3. Get JIT address
         jit_addr = get_jit_code_address(combo)
         if not jit_addr:
             return "fail", {
@@ -221,10 +222,10 @@ def run_once(run_id: int, output_dir: pathlib.Path) -> Tuple[str, Dict[str, Any]
                 "before_jit_latency": before_jit_latency
             }
         
-        # 3. Setup trampoline
+        # 4. Setup trampoline
         trampoline, dump_path = trampoline_overwrite(jit_addr, shell_addr, output_dir, run_id)
         
-        # 4. Execute jump
+        # 5. Execute jump
         status, log = jump_to_trampoline(jit_addr, trampoline, shell_addr, before_jit_latency)
         log["jit_map_snapshot"] = dump_path
         return status, log
@@ -232,29 +233,12 @@ def run_once(run_id: int, output_dir: pathlib.Path) -> Tuple[str, Dict[str, Any]
     except Exception as e:
         return "error", create_error_log(run_id, str(e), before_jit_latency)
 
-def run_single_test(args: Tuple[int, pathlib.Path]) -> Tuple[str, Dict[str, Any]]:
-    run_id, output_dir = args
-    return run_once(run_id, output_dir)
-
 if __name__ == "__main__":
-    start_time = time.time()
     output_dir = pathlib.Path("trampoline_jit_log")
     output_dir.mkdir(exist_ok=True)
     
-    multiprocessing.set_start_method("spawn")
-    pool = multiprocessing.Pool(processes=NUM_PROCESSES)
+    results = []
+    result = run_once(0, output_dir)
+    results.append(result)
     
-    print("Starting trampoline execution tests...")
-    print(f"Process count: {NUM_PROCESSES}")
-    print(f"Total iterations: {NUM_ITERATIONS}")
-    
-    try:
-        test_args = [(i, output_dir) for i in range(NUM_ITERATIONS)]
-        results = pool.map(run_single_test, test_args)
-        
-        # Process and display final results
-        process_results(results, output_dir)
-        
-    finally:
-        pool.close()
-        pool.join()
+    process_results(results, output_dir)
