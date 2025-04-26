@@ -3,13 +3,19 @@
 #include <stdio.h>
 #include <stdint.h>
 
-// executor 구조 추정
-typedef struct {
-    PyObject_HEAD
-    void* unused0;
-    void* jit_code;  // native function pointer
-    // ... 생략된 필드들
-} _PyExecutorObject;
+#define Py_BUILD_CORE
+
+#include "Python.h"
+#include "internal/pycore_code.h"       // For PyCodeObject and related APIs
+#include "internal/pycore_optimizer.h"  // For _PyExecutorObject
+#include "longobject.h"     // For _PyLong_Add
+#include "internal/pycore_long.h"    // For _PyLong_Add definition
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <errno.h>
 
 // _Py_GetExecutor 선언 (CPython 내부 API)
 extern _PyExecutorObject* _Py_GetExecutor(PyCodeObject *code, int offset);
@@ -36,6 +42,7 @@ static PyObject* leak_executor_jit(PyObject* self, PyObject* args) {
             printf("[*] executor found at offset %d\n", offset);
             printf("[*] executor @ %p\n", executor);
             printf("[*] executor->jit_code @ %p\n", executor->jit_code);
+            printf("[*] executor->jit_size @ %ld\n", executor->jit_size);
 	    PyErr_Clear();
             return PyLong_FromVoidPtr(executor->jit_code);
         }
