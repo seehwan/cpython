@@ -1,23 +1,19 @@
-; shellcode.s
-; write(1, "OK\n", 3)
-; exit(0)
-
 BITS 64
+
 global _start
 
 section .text
 _start:
-    mov rax, 1          ; syscall number for write
-    mov rdi, 1          ; file descriptor stdout
-    lea rsi, [rel message]
-    mov rdx, 3          ; length of message
-    syscall
+    ; execve("/bin/sh", NULL, NULL)
 
-    mov rax, 60         ; syscall number for exit
-    xor rdi, rdi        ; exit code 0
+    ; push "/bin/sh" string onto the stack
+    xor rax, rax
+    mov rbx, 0x68732f6e69622f2f  ; "/bin/sh" string (little-endian)
+    push rax
+    push rbx
+    mov rdi, rsp        ; rdi = pointer to "/bin/sh"
+    xor rsi, rsi        ; rsi = NULL (argv)
+    xor rdx, rdx        ; rdx = NULL (envp)
+    mov eax, 59         ; syscall number for execve
     syscall
-
-section .data
-message:
-    db "OK", 10         ; "OK\n"
 

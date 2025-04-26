@@ -44,7 +44,9 @@ static PyObject* leak_executor_jit(PyObject* self, PyObject* args) {
             printf("[*] executor->jit_code @ %p\n", executor->jit_code);
             printf("[*] executor->jit_size @ %ld\n", executor->jit_size);
 	    PyErr_Clear();
-            return PyLong_FromVoidPtr(executor->jit_code);
+
+            return Py_BuildValue("Kn", (uintptr_t)executor->jit_code, executor->jit_size);
+            // "K" = unsigned long long (void* cast safe), "n" = Py_ssize_t (size_t compatible)
         }
     }
 
