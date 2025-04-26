@@ -13,7 +13,7 @@ def run_command(cmd, require_sudo=False):
 def check_apparmor():
     print("[AppArmor       ] Checking AppArmor status...")
     try:
-        output = run_command(["aa-status"])  # no sudo needed
+        output = run_command(["aa-status"], require_sudo=True)
         enforce_profiles = re.search(r"(\d+)\s+profiles are in enforce mode", output)
         python_profile = "/usr/local/bin/python3.14" in output
         if enforce_profiles:
