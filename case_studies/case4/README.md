@@ -213,37 +213,100 @@ This technique demonstrates that **JIT transparency can be a double-edged sword*
 
 ## Advanced Topics
 
-### 1. Gadget Generation via Patching
-**Q: Can gadgets be accidentally created during stencil hole patching?**
+### 1. Gadget Generation via Patching (Including Unintended Instructions)
+**Q: Can gadgets be accidentally created during stencil hole patching? What about unintended instruction decoding?**
 
 See [`PATCH_GADGET_ANALYSIS.md`](PATCH_GADGET_ANALYSIS.md) for detailed analysis.
 
 **TL;DR**: 
-- ❌ **Theoretically possible but practically useless**
-- Probability: < 1/65,536 for any specific gadget (pop rax, syscall)
-- Even if created, alignment issues and data/code separation make them unusable
+- ❌ **Theoretically possible but practically useless (even with unintended instructions)**
+- Probability: 0.0015% (aligned) → 0.012% (unintended) - **8x improvement but still too low**
+- Even if created, runtime unpredictability and search overhead make them unusable
 - **Recommended**: Use libc gadgets instead (100% reliable, abundant)
 
-**Key insights**:
+**Key insights with unintended instruction analysis**:
 ```
-Patch functions write runtime values (addresses, operands):
-  patch_64(location, value)  // Writes 8-byte pointer/constant
-  patch_32r(location, value) // Writes 4-byte relative offset
+Unintended Instructions (x86-64):
+  Variable-length encoding → decode from any byte offset
+  
+  Example:
+  Aligned:   48 8b 45 10     mov rax, [rbp+0x10]
+  Offset +2: 45 10           rex.RB adc r8b, r8b
+  Offset +3: 10 48 89        adc [rax-0x77], cl
+  
+  Patched value 0x7ffff7a12358:
+  Offset +0: 58 23 a1 f7     pop rax; and esp, [...]  ✅ USABLE!
+  Offset +3: 58              pop rax                   ✅ FOUND!
 
-For "pop rax; ret" (0x58 0xc3) to appear:
-  - Lower byte of patched value must be 0x58 (probability: 1/256)
-  - Next byte must be 0xc3 (probability: 1/256)
-  - Total: 1/65,536 per patch site
+Probability Improvement:
+  Before (aligned only): 1/65,536 (0.0015%)
+  After (8 offsets):     8/65,536 (0.012%)
+  Improvement: 8x better!
   
-Additional constraints:
-  - Must be at instruction boundary (not middle of mov/lea)
-  - Must be in executable code region (not data section)
-  - Must be reachable by RIP (execution flow must hit it)
+Still Insurmountable Problems:
+  ❌ Probability: 0.012% = 1 in 8,192 (still very low)
+  ❌ Unpredictability: Patch value changes per run (ASLR)
+  ❌ Offset targeting: Must hardcode exact offset in ROP chain
+  ❌ Next instruction: Unknown byte after gadget (segfault risk)
+  ❌ Search time: 60s+ vs libc 0.01s (6000x slower)
   
-Practical probability: < 1/1,000,000
+Example Runtime Variance:
+  Run 1: patch_64(loc, 0x7ffff7a12358) → gadget at offset +3
+  Run 2: patch_64(loc, 0x7ffff7b45678) → NO gadget
+  Run 3: patch_64(loc, 0x7ffff7c12358) → gadget at offset +3 again
+  
+  Problem: Can't predict when/where gadget exists!
+
+Practical Probability: < 1/100,000 (considering all constraints)
 ```
 
-**Conclusion**: Patching-based gadget generation is an interesting theoretical curiosity but has zero practical value. Stick to **stencil scanning + libc fallback** strategy.
+**Where unintended instructions ARE valuable**:
+```
+✅ Stencil scanning: 33 → 42 gadgets (+27%)
+✅ libc scanning: 100 → 500+ gadgets (5x increase)
+❌ Patch-based: Still impractical despite 8x improvement
+```
+
+**Conclusion**: 
+- Unintended instruction decoding is a **powerful technique for stencil/libc scanning**
+- It provides **20-30% more gadgets** from static code
+- But it **doesn't make patch-based generation practical** due to runtime unpredictability
+- Stick to **stencil scanning + libc fallback** strategy (both with unintended decoding for maximum coverage)
+
+### Patch Function Type Analysis
+
+**All x86-64 patch functions examined** (from `jit_stencils.h`):
+```
+Function              | Usage   | Size    | Purpose
+----------------------|---------|---------|----------------------------------
+patch_64()            | 7,502×  | 8 bytes | Absolute addresses (pointers, globals)
+patch_x86_64_32rx()   | 2,583×  | 4 bytes | PC-relative + GOT optimization
+patch_32r()           | 567×    | 4 bytes | PC-relative jumps
+----------------------|---------|---------|----------------------------------
+Total                 | 10,652× per JIT function
+```
+
+**Gadget generation probability by patch type**:
+```
+Type                  | Per-patch Prob | 100K funcs Expected | Practical Value
+----------------------|----------------|---------------------|------------------
+patch_64              | 0.012%         | ~90 gadgets         | ❌ Unpredictable
+patch_x86_64_32rx     | 0.006%         | ~15 gadgets         | ❌ Unpredictable
+patch_32r             | 0.003%         | ~2 gadgets          | ❌ Unpredictable
+----------------------|----------------|---------------------|------------------
+Combined              | -              | ~107 gadgets        | ❌ Unstable
+vs. Stencil scan      | 100%           | 42 gadgets          | ✅ 100% stable
+vs. libc scan         | 100%           | 500+ gadgets        | ✅ 100% stable
+```
+
+**Key findings**:
+1. **patch_64 (71%)**: Most common, 8 bytes = most unintended opportunities, but 0.012% probability still too low
+2. **patch_x86_64_32rx (24%)**: GOT relaxation modifies instructions (`mov→lea`, `call [GOT]→nop; call`), but doesn't help gadget generation
+3. **patch_32r (5%)**: Small offsets (-1000~+1000), negative values start with 0xFF (blocks pop-family gadgets)
+
+**Conclusion**: Even considering **all 3 patch function types and 10,652 patches per function**, patch-based gadget generation remains impractical due to runtime unpredictability. Stencil + libc scanning remains the only reliable strategy.
+
+See: `PATCH_GADGET_ANALYSIS.md` for comprehensive patch function analysis
 
 ## Reproducibility
 
