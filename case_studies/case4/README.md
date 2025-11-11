@@ -211,6 +211,40 @@ This technique demonstrates that **JIT transparency can be a double-edged sword*
 - **Constant blinding**: Avoid emitting recognizable pop/xor sequences in stencils (complex, may degrade JIT quality)
 - **Strict CFI**: Validate return addresses against shadow stack
 
+## Advanced Topics
+
+### 1. Gadget Generation via Patching
+**Q: Can gadgets be accidentally created during stencil hole patching?**
+
+See [`PATCH_GADGET_ANALYSIS.md`](PATCH_GADGET_ANALYSIS.md) for detailed analysis.
+
+**TL;DR**: 
+- ❌ **Theoretically possible but practically useless**
+- Probability: < 1/65,536 for any specific gadget (pop rax, syscall)
+- Even if created, alignment issues and data/code separation make them unusable
+- **Recommended**: Use libc gadgets instead (100% reliable, abundant)
+
+**Key insights**:
+```
+Patch functions write runtime values (addresses, operands):
+  patch_64(location, value)  // Writes 8-byte pointer/constant
+  patch_32r(location, value) // Writes 4-byte relative offset
+
+For "pop rax; ret" (0x58 0xc3) to appear:
+  - Lower byte of patched value must be 0x58 (probability: 1/256)
+  - Next byte must be 0xc3 (probability: 1/256)
+  - Total: 1/65,536 per patch site
+  
+Additional constraints:
+  - Must be at instruction boundary (not middle of mov/lea)
+  - Must be in executable code region (not data section)
+  - Must be reachable by RIP (execution flow must hit it)
+  
+Practical probability: < 1/1,000,000
+```
+
+**Conclusion**: Patching-based gadget generation is an interesting theoretical curiosity but has zero practical value. Stick to **stencil scanning + libc fallback** strategy.
+
 ## Reproducibility
 
 ### Prerequisites
