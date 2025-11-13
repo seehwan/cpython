@@ -38,6 +38,7 @@ tags
 TAGS
 .vs/
 .vscode/
+.cache/
 gmon.out
 .coverage
 .mypy_cache/
@@ -171,3 +172,6 @@ Python/frozen_modules/MANIFEST
 
 # main branch only: ABI files are not checked/maintained.
 Doc/data/python*.abi
+cscope.out
+cscope.out.in
+cscope.out.po

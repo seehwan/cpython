@@ -31,5 +31,3 @@ for instr in instructions:
 test_function()
 
 jitaccess.attack_alias(test_function, 132)
-
-test_function()
