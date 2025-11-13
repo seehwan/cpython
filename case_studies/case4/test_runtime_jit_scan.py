@@ -25,6 +25,7 @@ import types
 from collections import defaultdict
 from capstone import *
 import jitexecleak
+from gadget_classifier import GadgetClassifier
 
 # ============================================================================
 # Configuration
@@ -228,6 +229,13 @@ class RuntimeJITScanner:
             'gadgets_found': 0,
         }
         self.address_diversity = defaultdict(set)  # 바이트별 주소 다양성 측정
+        
+        # 가젯 분류기
+        self.classifier = GadgetClassifier()
+        self.classified_results = None
+        
+        # JIT 메모리 캐시 (분류용)
+        self.jit_memory_cache = []  # [(base_addr, buffer)]
     
     def scan_functions(self, functions):
         """모든 JIT 함수 스캔"""
@@ -250,6 +258,10 @@ class RuntimeJITScanner:
         print(f"    Total bytes scanned: {self.stats['total_bytes_scanned']:,}")
         print(f"    Gadgets found: {self.stats['gadgets_found']}")
         
+        # 가젯 분류 수행
+        print(f"\n[*] Classifying gadgets by generation mechanism...")
+        self._classify_gadgets()
+        
         return self.gadgets
     
     def _scan_single_function(self, func, func_idx):
@@ -262,6 +274,9 @@ class RuntimeJITScanner:
             buffer = ctypes.string_at(jit_addr, jit_size)
             self.stats['jit_memory_accessible'] += 1
             self.stats['total_bytes_scanned'] += jit_size
+            
+            # JIT 메모리 캐시에 저장 (분류용)
+            self.jit_memory_cache.append((jit_addr, buffer))
             
             # Gadget 스캔 (모든 바이트 오프셋 - Unintended 포함)
             self._scan_buffer_for_gadgets(jit_addr, buffer)
@@ -342,6 +357,11 @@ class RuntimeJITScanner:
             print(f"    Byte {byte_pos}: {unique_vals:>3} unique values ({entropy:.2f} bits entropy)")
         
         print("\n" + "="*70)
+        
+        # 분류 결과 출력
+        if self.classified_results:
+            print("\n[Gadget Classification Report]")
+            self.classifier.print_classification_report()
     
     def export_results(self, filename):
         """결과를 JSON으로 저장"""
@@ -365,10 +385,38 @@ class RuntimeJITScanner:
             }
         }
         
+        # 분류 결과 추가
+        if self.classified_results:
+            classification_data = self.classifier.export_classification()
+            data['classification'] = classification_data
+        
         with open(filename, 'w') as f:
             json.dump(data, f, indent=2)
         
         print(f"[+] Results exported to {filename}")
+    
+    def _classify_gadgets(self):
+        """스캔된 가젯들을 생성 메커니즘별로 분류"""
+        if not self.jit_memory_cache:
+            print("[!] No JIT memory cached for classification")
+            return
+        
+        print(f"[*] Classifying {len(self.jit_memory_cache)} JIT memory regions...")
+        
+        # 각 JIT 메모리 버퍼에 대해 분류 수행
+        for idx, (base_addr, buffer) in enumerate(self.jit_memory_cache):
+            if idx % 10 == 0 and idx > 0:
+                print(f"    Progress: {idx}/{len(self.jit_memory_cache)} regions classified")
+            
+            self.classifier.classify_all_gadgets(base_addr, buffer, self.gadgets)
+        
+        # 분류 완료 표시 및 통계 저장
+        self.classified_results = {
+            'total_regions': len(self.jit_memory_cache),
+            'classified': True
+        }
+        print(f"[+] Classification complete!")
+
 
 # ============================================================================
 # Test Scenarios
@@ -384,8 +432,8 @@ def test_normal_allocation(num_functions=1000):
     generator = JITFunctionGenerator(spread_allocation=False)
     functions = generator.generate(num_functions)
     
-    # 2. Warm-up
-    generator.warmup(iterations=100)
+    # 2. Warm-up (5000+ iterations for Tier 2 JIT)
+    generator.warmup(iterations=5000)
     
     # 3. 스캔
     scanner = RuntimeJITScanner()
@@ -407,8 +455,8 @@ def test_spread_allocation(num_functions=1000):
     generator = JITFunctionGenerator(spread_allocation=True)
     functions = generator.generate(num_functions)
     
-    # 2. Warm-up
-    generator.warmup(iterations=100)
+    # 2. Warm-up (5000+ iterations for Tier 2 JIT)
+    generator.warmup(iterations=5000)
     
     # 3. 스캔
     scanner = RuntimeJITScanner()

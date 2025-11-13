@@ -18,6 +18,31 @@ Traditional JIT-spray attacks inject shellcode-derived constants hoping they app
 
 ## Tools and Artifacts
 
+### 0. **`GADGET_CLASSIFICATION.md` (NEW)**
+**Purpose**: Gadget generation mechanism analysis framework  
+**Features**:
+- 6-way classification of ROP gadgets by generation mechanism
+- Categories: Stencil-Aligned (27%), Instruction-Unaligned (56%), Patch-Induced (17%), Address-Diversity (0.1%), Patch-Unaligned (0.2%), Syscall-Special (rare)
+- Reliability scoring: HIGH (stencil/syscall), MEDIUM (unintended/patch), LOW (unaligned), VARIABLE (address-diversity)
+- Experimental validation with 10 functions (7,252-7,403 gadgets)
+- Algorithm: Capstone instruction boundary detection + patch signature matching
+- Security implications for both attack and defense perspectives
+
+**Key Findings**:
+- **Unintended gadgets dominate**: 55-56% from mid-instruction decoding
+- **Syscall discovered**: 1 per 10 functions (0x0f 0x05 at specific offsets)
+- **Spread allocation effect minimal** at small scale: 1.02x improvement (10 functions)
+- **Patch-induced gadgets**: 17% exploitable via strategic constant injection
+
+**Usage**:
+```bash
+# Full classification test
+python3 test_runtime_jit_scan.py -n 50 -t both
+
+# View classification report in output
+# JSON export includes classification data
+```
+
 ### 1. `stencil_gadget_scanner.py`
 **Purpose**: Static analysis of CPython JIT stencils  
 **Features**:
@@ -535,6 +560,61 @@ Result: 100% success rate, minimal RWX footprint
 **Recommendation**: Use hybrid approach with optimal pattern for best results.
 
 ### Tools for Analysis
+
+#### `test_runtime_jit_scan.py` (UPDATED)
+**Purpose**: Runtime JIT memory scanning with gadget classification  
+**Features**:
+- JIT function generation (normal/spread allocation)
+- 5000-iteration warmup for Tier 2 JIT compilation
+- Live memory scanning via `ctypes.string_at()`
+- **6-way gadget classification** (stencil-aligned, unintended, patch-induced, etc.)
+- Performance metrics (generation time, warmup time, scan time, code size)
+- Gadget type distribution and address diversity analysis
+- JSON export with classification data
+
+**Usage**:
+```bash
+# Test with 50 functions, normal allocation only
+python3 test_runtime_jit_scan.py -n 50 -t normal --no-comparison
+
+# Compare normal vs spread allocation (10 functions)
+python3 test_runtime_jit_scan.py -n 10 -t both
+
+# Large-scale test (200 functions, spread allocation)
+python3 test_runtime_jit_scan.py -n 200 -t spread
+```
+
+**Output**:
+- Console: Detailed classification report with percentages
+- JSON: `runtime_scan_normal.json`, `runtime_scan_spread.json`
+
+**Key Findings (10 functions)**:
+- Total gadgets: 7,252 (normal) / 7,403 (spread)
+- Syscall discovered: 1 per 10 functions
+- Unintended gadgets: 55-56% (dominant category)
+- Stencil-aligned: 26-27% (most reliable)
+- Patch-induced: 17% (exploitable via constant injection)
+
+#### `gadget_classifier.py` (NEW)
+**Purpose**: Gadget classification framework  
+**Features**:
+- `GadgetCategory` enum: 6 classification types
+- `GadgetClassifier` class: Multi-category classification engine
+- Capstone-based instruction boundary detection
+- Patch signature matching (`patch_64`, `patch_32`, `patch_x86_64_32rx`)
+- Address diversity analysis (8-byte pointer in libc range)
+- Reliability scoring (high/medium/low/variable)
+- Report generation and JSON export
+
+**Usage** (integrated with test_runtime_jit_scan.py):
+```python
+from gadget_classifier import GadgetClassifier
+
+classifier = GadgetClassifier()
+classified = classifier.classify_all_gadgets(base_addr, buffer, gadgets)
+classifier.print_classification_report()
+data = classifier.export_classification()
+```
 
 #### `gadget_pattern_analysis.py`
 Automated testing of code patterns:
