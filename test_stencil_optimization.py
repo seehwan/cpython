@@ -13,8 +13,8 @@ import argparse
 import sys
 import os
 
-# Add gadget_analysis directory to path
-sys.path.insert(0, '/home/mobileos2')
+# Add cpython directory to path for gadget_analysis import
+sys.path.insert(0, '/home/mobileos2/cpython')
 
 from gadget_analysis import (
     JITFunctionGenerator,

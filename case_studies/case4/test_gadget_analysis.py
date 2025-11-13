@@ -14,6 +14,8 @@ Usage:
 import argparse
 import sys
 
+sys.path.insert(0, '/home/mobileos2/cpython')
+
 from gadget_analysis import (
     GadgetClassifier,
     RuntimeJITScanner,

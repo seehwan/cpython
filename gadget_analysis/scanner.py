@@ -11,11 +11,19 @@ import time
 from collections import defaultdict
 from capstone import Cs, CS_ARCH_X86, CS_MODE_64
 
-# Import jitexecleak from parent directory
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import jitexecleak
+# Import jitexecleak from the same package
+try:
+    from . import jitexecleak
+except ImportError:
+    # Fallback for standalone usage
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(__file__))
+    try:
+        import jitexecleak
+    except ImportError:
+        print("[WARNING] jitexecleak not found. Scanner will not work without it.")
+        jitexecleak = None
 
 from .config import GADGET_PATTERNS, PROGRESS_REPORT_INTERVAL
 from .classifier import GadgetClassifier

@@ -11,7 +11,7 @@ Usage:
 """
 
 import sys
-sys.path.insert(0, '/home/mobileos2')
+sys.path.insert(0, '/home/mobileos2/cpython')
 
 from gadget_analysis import (
     JITFunctionGenerator,
