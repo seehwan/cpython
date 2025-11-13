@@ -395,7 +395,7 @@ def test_normal_allocation(num_functions=1000):
     scanner.print_results()
     scanner.export_results('runtime_scan_normal.json')
     
-    return scanner
+    return scanner, generator
 
 def test_spread_allocation(num_functions=1000):
     """테스트 2: Spread allocation (넓은 영역 분산)"""
@@ -418,7 +418,54 @@ def test_spread_allocation(num_functions=1000):
     scanner.print_results()
     scanner.export_results('runtime_scan_spread.json')
     
-    return scanner
+    return scanner, generator
+
+# ----------------------------------------------------------------------------
+# Summary and Analysis Utilities
+# ----------------------------------------------------------------------------
+def print_summary(label, scanner, generator):
+    print("\n" + "-"*70)
+    print(f"SUMMARY: {label}")
+    print("-"*70)
+    # Times
+    print(f"  JIT generate time : {generator.stats.get('generation_time', 0):.2f}s")
+    print(f"  Warm-up time      : {generator.stats.get('warmup_time', 0):.2f}s")
+    print(f"  Scan time         : {scanner.stats.get('scan_time', 0):.2f}s")
+    # Sizes and counts
+    print(f"  JIT code bytes    : {scanner.stats.get('total_bytes_scanned', 0):,} bytes")
+    print(f"  Functions scanned : {scanner.stats.get('functions_scanned', 0)}")
+    print(f"  JIT accessible    : {scanner.stats.get('jit_memory_accessible', 0)}")
+    # Gadget counts sorted
+    counts = [(k, len(v)) for k, v in scanner.gadgets.items()]
+    counts.sort(key=lambda x: x[1], reverse=True)
+    print("  Gadget counts     :")
+    for k, c in counts:
+        print(f"    - {k:<10}: {c}")
+
+def analyze_gadget_factors(scanner_normal=None, scanner_spread=None):
+    print("\n" + "-"*70)
+    print("ANALYSIS: Factors affecting gadget yield")
+    print("-"*70)
+    # Heuristics based on observed stats
+    def total_gadgets(scanner):
+        return sum(len(v) for v in scanner.gadgets.values()) if scanner else 0
+    normal_total = total_gadgets(scanner_normal)
+    spread_total = total_gadgets(scanner_spread)
+    if scanner_normal and scanner_spread:
+        improvement = (spread_total / normal_total) if normal_total > 0 else 0
+        print(f"  Spread vs Normal gadget yield: {spread_total} vs {normal_total} ({improvement:.2f}x)")
+        if improvement > 1.2:
+            print("  1) Address diversity (spread allocation) appears most impactful.")
+        else:
+            print("  1) Address diversity helps modestly at this scale.")
+        print("  2) Function count: yields scale roughly with number of JIT functions.")
+        print("  3) Warm-up iterations: ensure Tier-2 JIT (>=~5000) to increase stability and size.")
+        print("  4) Byte patterns (magic values) influence incidental pop/ret frequency.")
+    else:
+        print("  1) Function count: more functions → more chances for pop/ret patterns.")
+        print("  2) Address diversity: spreading modules widens patch_64 values.")
+        print("  3) Warm-up iterations: higher can improve executor availability and code size.")
+        print("  4) Magic constants and loop structure affect incidental sequences.")
 
 def compare_results(scanner_normal, scanner_spread):
     """두 테스트 결과 비교"""
@@ -494,17 +541,29 @@ def main():
     
     scanner_normal = None
     scanner_spread = None
+    gen_normal = None
+    gen_spread = None
     
     # Run tests
     if args.test in ['normal', 'both']:
-        scanner_normal = test_normal_allocation(args.num_functions)
+        scanner_normal, gen_normal = test_normal_allocation(args.num_functions)
     
     if args.test in ['spread', 'both']:
-        scanner_spread = test_spread_allocation(args.num_functions)
+        scanner_spread, gen_spread = test_spread_allocation(args.num_functions)
     
     # Compare results
     if args.test == 'both' and not args.no_comparison:
         compare_results(scanner_normal, scanner_spread)
+
+    # Summaries
+    if scanner_normal:
+        print_summary('Normal Allocation', scanner_normal, gen_normal)
+    if scanner_spread:
+        print_summary('Spread Allocation', scanner_spread, gen_spread)
+
+    # Factor analysis when both present
+    if scanner_normal and scanner_spread:
+        analyze_gadget_factors(scanner_normal, scanner_spread)
     
     print("\n" + "="*70)
     print("TEST COMPLETED")

@@ -1,6 +1,30 @@
-# Spread Allocation 실행 결과 분석
+# Spread Allocation 분석 및 실험 결과
 
-## 🔍 실행 결과 요약
+## 🔍 2025-11-13 업데이트: test_runtime_jit_scan.py 검증 결과
+
+### 최신 실험 (50 함수, Normal vs Spread)
+
+**실행 명령**:
+```bash
+python3 -u test_runtime_jit_scan.py -n 50 -t both --no-comparison
+```
+
+**핵심 발견사항**:
+1. **50개 규모에서는 Spread 효과 없음**: Normal 7,533 vs Spread 7,529 (1.00x)
+2. **워밍업 부족 문제**: 100 반복으로는 executor 접근성 2% (1/50)
+3. **pop_rdi 압도적**: 4,583개 (61%), CPython calling convention 특성
+4. **syscall은 JIT에서 절대 생성 안 됨**: 0x0f 0x05 시퀀스 부재
+
+**권장사항**:
+- 200-500 함수 규모로 확대 (주소 다양성 효과 확인)
+- 워밍업 5000+ 반복 (Tier-2 JIT 보장)
+- syscall은 libc/직접 생성에 의존
+
+자세한 분석: [`TEST_RUNTIME_JIT_SCAN.md`](TEST_RUNTIME_JIT_SCAN.md)
+
+---
+
+## 🔍 초기 실행 결과 요약 (7 함수, Multi-process 시도)
 
 ### JIT 메모리 할당 현황
 

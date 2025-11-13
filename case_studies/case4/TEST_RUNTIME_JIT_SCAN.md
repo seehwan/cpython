@@ -78,34 +78,83 @@ usage: test_runtime_jit_scan.py [-h] [-n NUM_FUNCTIONS] [-t {normal,spread,both}
   --no-comparison       비교 생략 (테스트만 실행)
 ```
 
-## 예상 결과
+## 실험 결과
 
-### Normal Allocation (1000 함수)
+### 실험 1: 50 함수 테스트 (2025-11-13)
+
+**실행 명령**:
+```bash
+python3 -u test_runtime_jit_scan.py -n 50 -t both --no-comparison
+```
+
+**Normal Allocation (50 함수)**:
 
 ```
+[Summary]
+  JIT generate time : 0.03s
+  Warm-up time      : 320.86s
+  Scan time         : 1.28s
+  JIT code bytes    : 188,416 bytes
+  Functions scanned : 50
+  JIT accessible    : 1
+
 [Gadgets Found]
+  pop_rax      :    594 gadgets
+  pop_rbx      :  1,377 gadgets
+  pop_rcx      :    366 gadgets
+  pop_rdi      :  4,583 gadgets  ← 가장 흔함
+  pop_rdx      :     63 gadgets
+  pop_rsi      :     86 gadgets
+  ret          :    464 gadgets
+  syscall      :      0 gadgets  ← JIT에서 생성 안 됨
+  
+Total: 7,533 gadgets
+Average: ~150 gadgets/function
+```
+
+**Spread Allocation (50 함수)**:
+
+```
+[Summary]
+  JIT generate time : 0.04s
+  Warm-up time      : 320.47s
+  Scan time         : 1.30s
+  JIT code bytes    : 188,416 bytes
+  Functions scanned : 50
+  JIT accessible    : 1
+
+[Gadgets Found]
+  pop_rax      :    596 gadgets
+  pop_rbx      :  1,377 gadgets
+  pop_rcx      :    360 gadgets
+  pop_rdi      :  4,583 gadgets
+  pop_rdx      :     63 gadgets
+  pop_rsi      :     86 gadgets
+  ret          :    464 gadgets
+  syscall      :      0 gadgets  ← JIT에서 생성 안 됨
+  
+Total: 7,529 gadgets
+Spread vs Normal: 1.00x (no significant difference at 50-function scale)
+```
+
+**핵심 발견사항**:
+1. **syscall (0x0f 0x05)은 JIT 코드에서 자연 발생하지 않음** ✗
+2. **pop_rdi가 압도적으로 많음** (4,583개, 전체의 61%)
+3. **50개 규모에서는 Normal vs Spread 차이 미미** (1.00x)
+4. **주소 다양성 측정 실패** (Accessible=1, 대부분 executor 해제됨)
+
+### 예상 결과 (1000 함수 스케일, 워밍업 증가 시)
+
+```
+[Gadgets Found - Projected]
   pop_rax      :   ~800 gadgets
   pop_rdi      :   ~800 gadgets
   pop_rsi      :   ~750 gadgets
   pop_rdx      :   ~700 gadgets
-  syscall      :   ~500 gadgets
+  syscall      :      0 gadgets  (JIT에서 생성 안 됨, libc 필요)
   ret          :  ~5000 gadgets
   
 Total: ~8,500 gadgets
-```
-
-### Spread Allocation (1000 함수)
-
-```
-[Gadgets Found]
-  pop_rax      :  ~1600 gadgets  (2x)
-  pop_rdi      :  ~1600 gadgets  (2x)
-  pop_rsi      :  ~1500 gadgets  (2x)
-  pop_rdx      :  ~1400 gadgets  (2x)
-  syscall      :  ~1000 gadgets  (2x)
-  ret          : ~10000 gadgets  (2x)
-  
-Total: ~17,000 gadgets (2x improvement)
 ```
 
 ### 주소 다양성 (Address Diversity)
@@ -119,7 +168,8 @@ Byte 3: 2-3 unique values  (1.0 bits entropy)  ← 거의 고정
 Byte 4-7: 1 unique value   (0.0 bits entropy)  ← 완전 고정
 ```
 
-**Spread Allocation (넓은 영역)**:
+### Spread Allocation (넓은 영역, 예상)
+
 ```
 Byte 0: 250+ unique values (8.0 bits entropy)
 Byte 1: 200+ unique values (7.6 bits entropy)
@@ -128,6 +178,11 @@ Byte 3: 10+ unique values  (3.3 bits entropy)  ← 개선!
 Byte 4: 2-3 unique values  (1.0 bits entropy)
 Byte 5-7: 1 unique value   (0.0 bits entropy)
 ```
+
+**실험 결과 (50 함수)**:
+- 워밍업 100 반복으로는 executor 접근성 매우 낮음 (1/50 = 2%)
+- 주소 다양성 측정 실패 (모든 바이트 0 unique values)
+- **권장**: 워밍업 5000+ 반복으로 Tier-2 JIT 보장 필요
 
 ## 출력 파일
 
@@ -162,28 +217,47 @@ jq '.gadgets.pop_rax[] | .address' runtime_scan_normal.json | head -10
 
 ### 1. Runtime 스캔의 실용성
 - ✅ ASLR 문제 해결: 이미 패치된 메모리 읽음
-- ✅ 충분한 gadget: 1000 함수로 수천 개 발견
+- ✅ 충분한 gadget: 50 함수로도 7,500+ 개 발견
 - ✅ 빠른 스캔: 1-2초 이내 완료
+- ⚠️ **syscall은 JIT에서 자연 생성 안 됨** → libc 또는 직접 생성 필요
 
 ### 2. JIT 영역 넓이의 영향
-- ✅ Spread allocation이 2-3배 더 많은 gadget 생성
-- ✅ 주소 다양성 증가 확인 (Byte 2-3의 엔트로피 증가)
-- ✅ patch_64 (8바이트) 주소의 상위 바이트 다양화
+- ⚠️ 50개 규모에서는 Spread 효과 미미 (1.00x)
+- ⚠️ 워밍업 부족으로 executor 접근성 낮음 (2%)
+- 📝 **추가 검증 필요**: 200-500 함수 + 5000 워밍업으로 재실험
 
 ### 3. Unintended Instruction의 효과
 - ✅ 정렬되지 않은 오프셋에서도 gadget 발견
-- ✅ 8개 디코딩 위치 모두 활용
+- ✅ 바이트 패턴 매칭으로 다양한 위치 스캔
+
+### 4. Gadget 분포 특성
+- ✅ **pop_rdi가 압도적 (61%)** - CPython JIT 특성
+- ✅ pop_rax, pop_rbx, pop_rcx도 충분한 양 생성
+- ❌ **syscall (0x0f 0x05) 미발견** - 의도 없이는 생성 안 됨
+- ✅ ret (0xc3)도 적절히 발견됨
 
 ## 성능 벤치마크
 
-### 예상 실행 시간
+### 실제 측정 결과 (2025-11-13)
+
+| 함수 개수 | 생성 시간 | Warm-up  | 스캔 시간 | 총 시간   | JIT 코드 크기 |
+|----------|----------|----------|----------|-----------|--------------|
+| 50       | 0.03s    | 320.86s  | 1.28s    | ~322s (5.4분) | 188,416 bytes |
+
+**주의사항**:
+- 워밍업 시간이 압도적 (전체의 99.5%)
+- 함수 템플릿에 `{3000 + seed * 500}` 반복문 → 지수적 증가
+- Func 0: 3,000 반복, Func 50: 28,000 반복
+- **최적화 필요**: 상수 반복 횟수 사용 권장
+
+### 예상 실행 시간 (최적화 후)
 
 | 함수 개수 | 생성 시간 | Warm-up | 스캔 시간 | 총 시간 |
 |----------|----------|---------|----------|---------|
-| 100      | ~5초     | ~10초   | ~0.2초   | ~15초   |
-| 1,000    | ~50초    | ~100초  | ~2초     | ~2.5분  |
-| 5,000    | ~4분     | ~8분    | ~10초    | ~12분   |
-| 10,000   | ~8분     | ~16분   | ~20초    | ~24분   |
+| 100      | ~5초     | ~30초   | ~0.5초   | ~35초   |
+| 1,000    | ~50초    | ~5분    | ~2초     | ~6분    |
+| 5,000    | ~4분     | ~25분   | ~10초    | ~29분   |
+| 10,000   | ~8분     | ~50분   | ~20초    | ~58분   |
 
 ### 메모리 사용량
 
