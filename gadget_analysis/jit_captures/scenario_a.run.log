@@ -1,0 +1,88 @@
+
+============================================================
+SCENARIO A: Standard JIT Functions (100 functions, repeats=3)
+============================================================
+
+--- Run 1/3 ---
+
+[1/5] Generating 100 test functions...
+[+] Using StencilOptimizer for high-gadget-density code generation
+[*] Generating 100 functions with NORMAL allocation...
+  Progress: 100/100 functions generated
+[+] Generated 100 functions in 0.10s
+[2/5] Warming up JIT compilation (this takes time)...
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2070.66s
+    JIT compiled: 100
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2080.43s
+    JIT compiled: 200
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2064.13s
+    JIT compiled: 300
+    Failed: 0
+    - Warmup progress: 10% (600/6000)
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2069.19s
+    JIT compiled: 400
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2055.10s
+    JIT compiled: 500
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2063.15s
+    JIT compiled: 600
+    Failed: 0
+    - Warmup progress: 20% (1200/6000)
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2056.07s
+    JIT compiled: 700
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2049.85s
+    JIT compiled: 800
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2066.84s
+    JIT compiled: 900
+    Failed: 0
+    - Warmup progress: 30% (1800/6000)
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2059.00s
+    JIT compiled: 1000
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2053.29s
+    JIT compiled: 1100
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2057.18s
+    JIT compiled: 1200
+    Failed: 0
+    - Warmup progress: 40% (2400/6000)
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2088.06s
+    JIT compiled: 1300
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
+  Progress: 100/100 functions warmed up
+[+] Warm-up completed in 2040.60s
+    JIT compiled: 1400
+    Failed: 0
+[*] Warming up 100 functions (200 iterations each)...
