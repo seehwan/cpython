@@ -12,14 +12,46 @@ import gc
 
 from gadget_analysis.generator import JITFunctionGenerator
 from gadget_analysis.scanner import RuntimeJITScanner
+from gadget_analysis.experiment_manager import ExperimentManager
 
 
 class JITCodeCapture:
     """JIT 코드 생성 및 메모리 캡처"""
     
-    def __init__(self, output_dir: str = "gadget_analysis/jit_captures"):
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(self, output_dir: str = None, experiment_id: str = None):
+        """
+        Initialize JIT code capturer
+        
+        Args:
+            output_dir: Custom output directory (overrides experiment manager)
+            experiment_id: Experiment ID to use (creates new if None)
+        """
+        if output_dir:
+            # Use custom directory (legacy mode)
+            self.output_dir = Path(output_dir)
+            self.output_dir.mkdir(parents=True, exist_ok=True)
+            self.experiment_dir = None
+            self.experiment_id = None
+        else:
+            # Use experiment manager
+            self.exp_manager = ExperimentManager()
+            
+            if experiment_id:
+                self.experiment_dir = self.exp_manager.get_experiment(experiment_id)
+                self.experiment_id = experiment_id
+            else:
+                # Create new experiment
+                self.experiment_dir = self.exp_manager.create_experiment(
+                    name="jit_generation",
+                    description="JIT code generation for gadget analysis"
+                )
+                self.experiment_id = self.experiment_dir.name
+            
+            self.output_dir = self.experiment_dir / "captures"
+            self.output_dir.mkdir(parents=True, exist_ok=True)
+            
+            print(f"[*] Using experiment: {self.experiment_id}")
+            print(f"[*] Output directory: {self.output_dir}")
     
     def capture_standard_functions(self, count: int = 100, iters: int = 6000, repeat: int = 1, scenario_name: str = "scenario_a"):
         """
@@ -64,7 +96,7 @@ class JITCodeCapture:
             # 2. 패치 전 메모리 스캔
             print(f"[3/5] Scanning JIT memory (before patch)...")
             scanner = RuntimeJITScanner()
-            pre_patch_data = scanner.scan_memory()
+            pre_patch_data = scanner.scan_functions(functions)
 
             # 3. 패치 함수 호출 추적을 위한 후크 (선택적)
             print(f"[4/5] Triggering patch operations...")
@@ -76,7 +108,7 @@ class JITCodeCapture:
 
             # 4. 패치 후 메모리 스캔
             print(f"[5/5] Scanning JIT memory (after patch)...")
-            post_patch_data = scanner.scan_memory()
+            post_patch_data = scanner.scan_functions(functions)
 
             # 5. 데이터 저장
             capture_data = {
@@ -190,7 +222,7 @@ class JITCodeCapture:
             
             print(f"  Scanning memory...")
             scanner = RuntimeJITScanner()
-            memory_data = scanner.scan_memory()
+            memory_data = scanner.scan_functions(all_functions)
             
             all_captures.append({
                 'region_count': region_count,
@@ -250,7 +282,7 @@ class JITCodeCapture:
         
         print(f"[3/3] Scanning for syscall gadgets...")
         scanner = RuntimeJITScanner()
-        memory_data = scanner.scan_memory()
+        memory_data = scanner.scan_functions(functions)
         
         capture_data = {
             'scenario': scenario_name,
@@ -284,31 +316,12 @@ class JITCodeCapture:
         print(f"SCENARIO D: Opcode-Sensitive Generator ({count} functions)")
         print(f"{'='*60}")
         
-        # spray_execve 템플릿을 사용하는 함수 생성
+        # JIT 함수 생성 (optimizer 사용)
         print(f"[1/3] Generating opcode-sensitive functions...")
+        generator = JITFunctionGenerator(use_optimizer=True)
+        functions = generator.generate(count=count)
         
-        def spray_execve(seed, buf):
-            """가젯 친화적 opcode를 생성하는 템플릿"""
-            helper = lambda v: (v ^ 0xC3C3C3C3) + 0x0F05FF90
-            acc = seed
-            for i in range(2048 + (seed & 0xFF)):
-                acc ^= helper(acc) + (i << (i & 7))
-                acc = ((acc << (i & 3)) | (acc >> (32 - (i & 3)))) & 0xFFFFFFFF
-                acc += buf[i % len(buf)]
-                if i & 1:
-                    acc ^= buf[(i * 3) % len(buf)]
-                else:
-                    acc += helper(buf[(i * 5) % len(buf)])
-            return acc
-        
-        # 이 템플릿을 여러 시드/버퍼로 실행하여 JIT 코드 생성
-        functions = []
-        for seed in range(count):
-            buf = bytes(range(256))  # 고정 버퍼
-            result = spray_execve(seed, buf)
-            functions.append((seed, result))
-        
-        # 실제로는 이 함수들이 JIT 컴파일되도록 워밍업 필요
+        # 워밍업
         print(f"[2/3] Warming up opcode-sensitive functions...")
         total_iters = int(iters)
         chunk = 200
@@ -318,13 +331,10 @@ class JITCodeCapture:
             gc.disable()
             while done < total_iters:
                 step = min(chunk, total_iters - done)
-                for _ in range(step):
-                    for seed in range(min(10, count)):
-                        buf = bytes(range(256))
-                        spray_execve(seed, buf)
+                generator.warmup(iterations=step)
                 done += step
                 percent = int(done / total_iters * 100)
-                if percent % 5 == 0:
+                if percent % 20 == 0:
                     print(f"    - Warmup progress: {percent}% ({done}/{total_iters})", flush=True)
         finally:
             if gc_disable_prev:
@@ -332,7 +342,7 @@ class JITCodeCapture:
         
         print(f"[3/3] Scanning memory...")
         scanner = RuntimeJITScanner()
-        memory_data = scanner.scan_memory()
+        memory_data = scanner.scan_functions(functions)
         
         capture_data = {
             'scenario': scenario_name,
@@ -376,9 +386,15 @@ def main():
                        help='Comma-separated region counts for scenario B (e.g., 1,8,16,32,64,80)')
     parser.add_argument('--repeat', type=int, default=1,
                        help='Repeat capture n times (scenario A only, default: 1)')
+    parser.add_argument('--experiment-id', type=str, default=None,
+                       help='Experiment ID to use (creates new if not specified)')
     args = parser.parse_args()
     
-    capturer = JITCodeCapture(output_dir=args.output_dir)
+    # Use experiment manager or custom output dir
+    if args.experiment_id or not args.output_dir.startswith('gadget_analysis/jit_captures'):
+        capturer = JITCodeCapture(experiment_id=args.experiment_id)
+    else:
+        capturer = JITCodeCapture(output_dir=args.output_dir)
     
     if args.scenario in ['a', 'all']:
         count = args.count if args.count is not None else 100
@@ -398,7 +414,11 @@ def main():
     
     print(f"\n{'='*60}")
     print("All scenarios captured successfully!")
-    print(f"Data saved to: {args.output_dir}")
+    if capturer.experiment_id:
+        print(f"Experiment ID: {capturer.experiment_id}")
+        print(f"Data saved to: {capturer.output_dir}")
+    else:
+        print(f"Data saved to: {args.output_dir}")
     print(f"{'='*60}")
 
 

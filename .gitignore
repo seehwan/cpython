@@ -175,3 +175,9 @@ Doc/data/python*.abi
 cscope.out
 cscope.out.in
 cscope.out.po
+
+# Gadget analysis experiment and test data
+gadget_analysis/experiments/
+gadget_analysis/jit_captures/test_*.pkl
+gadget_analysis/jit_captures/test_*_meta.json
+gadget_analysis/experiment_*_results/
