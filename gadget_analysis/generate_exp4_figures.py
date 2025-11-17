@@ -15,9 +15,20 @@ import numpy as np
 from pathlib import Path
 from collections import Counter
 
-# Publication-quality settings
-plt.rcParams['font.family'] = 'DejaVu Sans'
-plt.rcParams['font.size'] = 10
+# Publication-quality settings with Times font and larger text
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'Liberation Serif', 'DejaVu Serif']
+plt.rcParams['font.size'] = 18
+plt.rcParams['axes.labelsize'] = 20
+plt.rcParams['axes.titlesize'] = 22
+plt.rcParams['xtick.labelsize'] = 18
+plt.rcParams['ytick.labelsize'] = 18
+plt.rcParams['legend.fontsize'] = 18
+plt.rcParams['figure.titlesize'] = 24
+plt.rcParams['text.color'] = 'black'
+plt.rcParams['axes.labelcolor'] = 'black'
+plt.rcParams['xtick.color'] = 'black'
+plt.rcParams['ytick.color'] = 'black'
 plt.rcParams['figure.dpi'] = 300
 plt.rcParams['savefig.dpi'] = 300
 plt.rcParams['savefig.bbox'] = 'tight'
@@ -61,11 +72,11 @@ bars1 = ax1.bar(x - width/2, static_pct, width, label='Static (All Stencils)',
 bars2 = ax1.bar(x + width/2, dynamic_pct, width, label='Dynamic (Scenario A)',
                 color='#beaed4', edgecolor='black', linewidth=0.5)
 
-ax1.set_xlabel('Patch Function', fontweight='bold')
-ax1.set_ylabel('Percentage (%)', fontweight='bold')
-ax1.set_title('Patch Function Distribution', fontweight='bold', fontsize=12)
+ax1.set_xlabel('Patch Function', fontweight='bold', color='black')
+ax1.set_ylabel('Percentage (%)', fontweight='bold', color='black')
+ax1.set_title('Patch Function Distribution', fontweight='bold', color='black')
 ax1.set_xticks(x)
-ax1.set_xticklabels(['patch_64', 'patch_x86_\n64_32rx', 'patch_32r'])
+ax1.set_xticklabels(['patch_64', 'patch_x86_\n64_32rx', 'patch_32r'], color='black')
 ax1.legend(loc='upper right')
 ax1.grid(axis='y', alpha=0.3, linestyle='--')
 ax1.set_ylim(0, 80)
@@ -74,7 +85,7 @@ for bars in [bars1, bars2]:
     for bar in bars:
         height = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width()/2., height,
-                f'{height:.1f}%', ha='center', va='bottom', fontsize=8)
+                f'{height:.1f}%', ha='center', va='bottom', fontsize=18, color='black')
 
 # Right: Absolute counts (log scale)
 static_vals = [static_data[pf] for pf in patch_funcs]
@@ -85,11 +96,11 @@ bars3 = ax2.bar(x - width/2, static_vals, width, label='Static',
 bars4 = ax2.bar(x + width/2, dynamic_vals, width, label='Dynamic',
                 color='#beaed4', edgecolor='black', linewidth=0.5)
 
-ax2.set_xlabel('Patch Function', fontweight='bold')
-ax2.set_ylabel('Call Count (log scale)', fontweight='bold')
-ax2.set_title('Absolute Call Counts', fontweight='bold', fontsize=12)
+ax2.set_xlabel('Patch Function', fontweight='bold', color='black')
+ax2.set_ylabel('Call Count (log scale)', fontweight='bold', color='black')
+ax2.set_title('Absolute Call Counts', fontweight='bold', color='black')
 ax2.set_xticks(x)
-ax2.set_xticklabels(['patch_64', 'patch_x86_\n64_32rx', 'patch_32r'])
+ax2.set_xticklabels(['patch_64', 'patch_x86_\n64_32rx', 'patch_32r'], color='black')
 ax2.set_yscale('log')
 ax2.legend(loc='upper right')
 ax2.grid(axis='y', alpha=0.3, linestyle='--', which='both')
@@ -124,16 +135,16 @@ ax.barh(y, patch_32r_vals, 0.25, left=np.array(patch_64_vals) + np.array(patch_x
         label='patch_32r', color='#4daf4a', edgecolor='black', linewidth=0.5)
 
 ax.set_yticks(y)
-ax.set_yticklabels(uop_names)
-ax.set_xlabel('Estimated Patch Calls (Scenario A)', fontweight='bold', fontsize=11)
-ax.set_ylabel('Tier-2 uop', fontweight='bold', fontsize=11)
-ax.set_title('Top 10 uops by Patch Function Contribution', fontweight='bold', fontsize=13)
+ax.set_yticklabels(uop_names, color='black')
+ax.set_xlabel('Estimated Patch Calls (Scenario A)', fontweight='bold', color='black')
+ax.set_ylabel('Tier-2 uop', fontweight='bold', color='black')
+ax.set_title('Top 10 uops by Patch Function Contribution', fontweight='bold', color='black')
 ax.legend(loc='lower right', framealpha=0.9)
 ax.grid(axis='x', alpha=0.3, linestyle='--')
 
 totals = [data['total'] for _, data in sorted_uops]
 for i, total in enumerate(totals):
-    ax.text(total + 2000, i, f'{total:,}', va='center', fontsize=8, fontweight='bold')
+    ax.text(total + 2000, i, f'{total:,}', va='center', fontsize=18, fontweight='bold', color='black')
 
 plt.tight_layout()
 plt.savefig(output_dir / 'figure_exp4_uop_patch_contribution.pdf')
@@ -157,21 +168,25 @@ colors = ['#e41a1c', '#377eb8', '#4daf4a']
 wedges, texts, autotexts = ax1.pie(sizes, explode=(0.05, 0.05, 0.05),
                                      labels=patch_funcs, autopct='%1.1f%%',
                                      colors=colors, startangle=90,
-                                     textprops={'fontsize': 9})
+                                     textprops={'fontsize': 18, 'color': 'black'})
+for text in texts:
+    text.set_color('black')
+    text.set_fontsize(18)
 for autotext in autotexts:
     autotext.set_color('white')
     autotext.set_fontweight('bold')
-ax1.set_title('Patch Function\nUsage Distribution', fontweight='bold', fontsize=10)
+    autotext.set_fontsize(18)
+ax1.set_title('Patch Function\nUsage Distribution', fontweight='bold', color='black')
 
 # Panel 2: Total patches
 ax2 = fig.add_subplot(gs[0, 1])
 total_patches = sum(dynamic_data.values())
 ax2.text(0.5, 0.6, f'{total_patches:,}', ha='center', va='center',
-         fontsize=32, fontweight='bold', color='#2c3e50')
+         fontsize=36, fontweight='bold', color='black')
 ax2.text(0.5, 0.3, 'Total Patch Calls\n(Scenario A)', ha='center', va='center',
-         fontsize=11, color='#555')
+         fontsize=20, color='black')
 ax2.text(0.5, 0.1, 'Yet Δ gadgets = 0', ha='center', va='center',
-         fontsize=10, style='italic', color='#e74c3c', fontweight='bold')
+         fontsize=20, style='italic', color='black', fontweight='bold')
 ax2.set_xlim(0, 1)
 ax2.set_ylim(0, 1)
 ax2.axis('off')
@@ -183,9 +198,9 @@ x_pos = np.arange(len(gadget_types))
 ax3.bar(x_pos, np.zeros(len(gadget_types)), color='#95a5a6', edgecolor='black', linewidth=1)
 ax3.axhline(y=0, color='red', linestyle='--', linewidth=2, label='Zero line')
 ax3.set_xticks(x_pos)
-ax3.set_xticklabels(gadget_types, rotation=45, ha='right', fontsize=8)
-ax3.set_ylabel('Δ Gadget Count', fontweight='bold')
-ax3.set_title('Pre-Patch vs Post-Patch\nGadget Delta', fontweight='bold', fontsize=10)
+ax3.set_xticklabels(gadget_types, rotation=45, ha='right', color='black')
+ax3.set_ylabel('Δ Gadget Count', fontweight='bold', color='black')
+ax3.set_title('Pre-Patch vs Post-Patch\nGadget Delta', fontweight='bold', color='black')
 ax3.grid(axis='y', alpha=0.3, linestyle='--')
 ax3.legend(loc='upper right')
 ax3.set_ylim(-5, 5)
@@ -205,7 +220,7 @@ table_data = [
 table = ax4.table(cellText=table_data, cellLoc='center', loc='center',
                   bbox=[0.05, 0.2, 0.9, 0.7])
 table.auto_set_font_size(False)
-table.set_fontsize(9)
+table.set_fontsize(16)
 
 for i in range(6):
     cell = table[(0, i)]
@@ -215,13 +230,14 @@ for i in range(6):
 for i in range(1, 5):
     for j in range(6):
         cell = table[(i, j)]
+        cell.set_text_props(color='black')
         if i == 4:
             cell.set_facecolor('#ecf0f1')
         if j == 5:
-            cell.set_text_props(weight='bold', color='#27ae60')
+            cell.set_text_props(weight='bold', color='black')
 
 ax4.text(0.5, 0.95, 'Patch Function Impact Summary: All Functions Show Zero Net Change',
-         ha='center', va='top', fontsize=12, fontweight='bold', transform=ax4.transAxes)
+         ha='center', va='top', fontsize=20, fontweight='bold', color='black', transform=ax4.transAxes)
 
 plt.savefig(output_dir / 'figure_exp4_zero_delta_comprehensive.pdf')
 plt.savefig(output_dir / 'figure_exp4_zero_delta_comprehensive.png')
@@ -247,9 +263,9 @@ patch_32r_hypo = np.random.poisson(2, n_points)
 ax1.scatter(offsets, patch_64_hypo, alpha=0.6, s=50, c='#e41a1c', label='patch_64', edgecolors='black', linewidth=0.5)
 ax1.scatter(offsets, patch_x86_hypo, alpha=0.6, s=50, c='#377eb8', label='patch_x86_64_32rx', edgecolors='black', linewidth=0.5)
 ax1.scatter(offsets, patch_32r_hypo, alpha=0.6, s=50, c='#4daf4a', label='patch_32r', edgecolors='black', linewidth=0.5)
-ax1.set_xlabel('Patch Offset in Code Buffer', fontweight='bold')
-ax1.set_ylabel('New Gadgets Introduced', fontweight='bold')
-ax1.set_title('Hypothetical: Expected Patch Impact\n(What Paper Anticipated)', fontweight='bold', fontsize=11)
+ax1.set_xlabel('Patch Offset in Code Buffer', fontweight='bold', color='black')
+ax1.set_ylabel('New Gadgets Introduced', fontweight='bold', color='black')
+ax1.set_title('Hypothetical: Expected Patch Impact\n(What Paper Anticipated)', fontweight='bold', color='black')
 ax1.legend(loc='upper right')
 ax1.grid(alpha=0.3, linestyle='--')
 ax1.set_ylim(-1, 12)
@@ -257,15 +273,15 @@ ax1.set_ylim(-1, 12)
 # Right: Actual
 ax2.scatter(offsets, np.zeros(n_points), alpha=0.6, s=50, c='#95a5a6', edgecolors='black', linewidth=0.5)
 ax2.axhline(y=0, color='#e74c3c', linestyle='--', linewidth=2, label='Zero line (all patch functions)')
-ax2.set_xlabel('Patch Offset in Code Buffer', fontweight='bold')
-ax2.set_ylabel('New Gadgets Introduced', fontweight='bold')
-ax2.set_title('Actual: Measured Patch Impact\n(All Patch Functions: Δ = 0)', fontweight='bold', fontsize=11)
+ax2.set_xlabel('Patch Offset in Code Buffer', fontweight='bold', color='black')
+ax2.set_ylabel('New Gadgets Introduced', fontweight='bold', color='black')
+ax2.set_title('Actual: Measured Patch Impact\n(All Patch Functions: Δ = 0)', fontweight='bold', color='black')
 ax2.legend(loc='upper right')
 ax2.grid(alpha=0.3, linestyle='--')
 ax2.set_ylim(-1, 12)
 
 ax2.text(500, 6, 'Perfect Gadget Invariance\nAcross All Patch Functions',
-         ha='center', va='center', fontsize=11, style='italic',
+         ha='center', va='center', fontsize=20, style='italic', color='black',
          bbox=dict(boxstyle='round,pad=0.8', facecolor='#ecf0f1', edgecolor='#34495e', linewidth=2))
 
 plt.tight_layout()
