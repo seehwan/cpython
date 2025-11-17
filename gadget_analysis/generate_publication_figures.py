@@ -19,15 +19,20 @@ from matplotlib.patches import Rectangle
 import numpy as np
 import seaborn as sns
 
-# Set publication-quality defaults
+# Set publication-quality defaults with Times font and larger text
 plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.size'] = 10
-plt.rcParams['axes.labelsize'] = 11
-plt.rcParams['axes.titlesize'] = 12
-plt.rcParams['xtick.labelsize'] = 9
-plt.rcParams['ytick.labelsize'] = 9
-plt.rcParams['legend.fontsize'] = 9
-plt.rcParams['figure.titlesize'] = 13
+plt.rcParams['font.serif'] = ['Times New Roman', 'Times', 'Liberation Serif', 'DejaVu Serif']
+plt.rcParams['font.size'] = 18
+plt.rcParams['axes.labelsize'] = 20
+plt.rcParams['axes.titlesize'] = 22
+plt.rcParams['xtick.labelsize'] = 18
+plt.rcParams['ytick.labelsize'] = 18
+plt.rcParams['legend.fontsize'] = 18
+plt.rcParams['figure.titlesize'] = 24
+plt.rcParams['text.color'] = 'black'
+plt.rcParams['axes.labelcolor'] = 'black'
+plt.rcParams['xtick.color'] = 'black'
+plt.rcParams['ytick.color'] = 'black'
 plt.rcParams['pdf.fonttype'] = 42  # TrueType fonts for better PDF embedding
 
 sys.path.insert(0, '/home/mobileos2/cpython')
@@ -111,11 +116,12 @@ def generate_experiment2_heatmap(runs, output_dir):
         for j in range(3):
             text = ax.text(j, i, int(matrix[i, j]),
                           ha="center", va="center", color="black" if matrix[i, j] < matrix.max()*0.5 else "white",
-                          fontweight='bold', fontsize=9)
+                          fontweight='bold', fontsize=18)
     
-    ax.set_title('Gadget Type Distribution Across Three Scenario A Runs', fontweight='bold', pad=15)
-    ax.set_xlabel('Run Number', fontweight='bold')
-    ax.set_ylabel('Gadget Type', fontweight='bold')
+    ax.set_title('Gadget Type Distribution Across Three Scenario A Runs', fontweight='bold', pad=15, color='black')
+    ax.set_xlabel('Run Number', fontweight='bold', color='black')
+    ax.set_ylabel('Gadget Type', fontweight='bold', color='black')
+    cbar.ax.tick_params(labelsize=18, colors='black')
     
     plt.tight_layout()
     
@@ -202,7 +208,7 @@ def generate_experiment2_summary_table(runs, output_dir):
                     colWidths=[0.18, 0.12, 0.12, 0.12, 0.12, 0.12, 0.12])
     
     table.auto_set_font_size(False)
-    table.set_fontsize(9)
+    table.set_fontsize(16)
     table.scale(1, 2)
     
     # Style header row
@@ -224,7 +230,7 @@ def generate_experiment2_summary_table(runs, output_dir):
             if i % 2 == 0:
                 cell.set_facecolor('#F2F2F2')
     
-    plt.title('Experiment 2: Gadget Type Distribution Summary', fontweight='bold', pad=20, fontsize=13)
+    plt.title('Experiment 2: Gadget Type Distribution Summary', fontweight='bold', pad=20, color='black')
     
     # Save
     pdf_path = output_dir / "figure_exp2_summary_table.pdf"
@@ -274,11 +280,11 @@ def generate_experiment3_offset_comparison(runs, output_dir):
         height = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width()/2., height,
                 f'{int(count)}',
-                ha='center', va='bottom', fontweight='bold', fontsize=9)
+                ha='center', va='bottom', fontweight='bold', fontsize=18, color='black')
     
-    ax1.set_xlabel('Address Offset (mod 8)', fontweight='bold', fontsize=11)
-    ax1.set_ylabel('Gadget Count', fontweight='bold', fontsize=11)
-    ax1.set_title('Gadget Distribution by Address Offset', fontweight='bold', fontsize=12)
+    ax1.set_xlabel('Address Offset (mod 8)', fontweight='bold', color='black')
+    ax1.set_ylabel('Gadget Count', fontweight='bold', color='black')
+    ax1.set_title('Gadget Distribution by Address Offset', fontweight='bold', color='black')
     ax1.set_xticks(offsets)
     ax1.grid(axis='y', alpha=0.3, linestyle='--')
     
@@ -292,11 +298,11 @@ def generate_experiment3_offset_comparison(runs, output_dir):
         height = bar.get_height()
         ax2.text(bar.get_x() + bar.get_width()/2., height,
                 f'{pct:.1f}%',
-                ha='center', va='bottom', fontweight='bold', fontsize=9)
+                ha='center', va='bottom', fontweight='bold', fontsize=18, color='black')
     
-    ax2.set_xlabel('Address Offset (mod 8)', fontweight='bold', fontsize=11)
-    ax2.set_ylabel('Percentage of Total (%)', fontweight='bold', fontsize=11)
-    ax2.set_title('Relative Gadget Distribution', fontweight='bold', fontsize=12)
+    ax2.set_xlabel('Address Offset (mod 8)', fontweight='bold', color='black')
+    ax2.set_ylabel('Percentage of Total (%)', fontweight='bold', color='black')
+    ax2.set_title('Relative Gadget Distribution', fontweight='bold', color='black')
     ax2.set_xticks(offsets)
     ax2.grid(axis='y', alpha=0.3, linestyle='--')
     ax2.axhline(y=12.5, color='r', linestyle='--', alpha=0.5, label='Uniform (12.5%)')
@@ -366,11 +372,11 @@ def generate_experiment4_patch_impact_scatter(runs, output_dir):
     # Label points
     for gtype, x, y in zip(gadget_types, x_vals, y_vals):
         ax1.annotate(gtype, (x, y), xytext=(5, 5), textcoords='offset points', 
-                    fontsize=8, alpha=0.8, fontweight='bold')
+                    fontsize=18, alpha=0.8, fontweight='bold', color='black')
     
-    ax1.set_xlabel('Pre-Patch Gadget Count (Average)', fontweight='bold', fontsize=11)
-    ax1.set_ylabel('Post-Patch Gadget Count (Average)', fontweight='bold', fontsize=11)
-    ax1.set_title('Pre-Patch vs Post-Patch Gadget Counts', fontweight='bold', fontsize=12)
+    ax1.set_xlabel('Pre-Patch Gadget Count (Average)', fontweight='bold', color='black')
+    ax1.set_ylabel('Post-Patch Gadget Count (Average)', fontweight='bold', color='black')
+    ax1.set_title('Pre-Patch vs Post-Patch Gadget Counts', fontweight='bold', color='black')
     ax1.legend()
     ax1.grid(alpha=0.3, linestyle='--')
     
@@ -384,9 +390,9 @@ def generate_experiment4_patch_impact_scatter(runs, output_dir):
     bars = ax2.barh(y_pos, delta_vals, color=colors_bar, edgecolor='black', linewidth=0.8)
     
     ax2.set_yticks(y_pos)
-    ax2.set_yticklabels(sorted_types)
-    ax2.set_xlabel('Gadget Count Change (Δ)', fontweight='bold', fontsize=11)
-    ax2.set_title('Patch Impact by Gadget Type', fontweight='bold', fontsize=12)
+    ax2.set_yticklabels(sorted_types, color='black')
+    ax2.set_xlabel('Gadget Count Change (Δ)', fontweight='bold', color='black')
+    ax2.set_title('Patch Impact by Gadget Type', fontweight='bold', color='black')
     ax2.axvline(x=0, color='black', linewidth=1.5)
     ax2.grid(axis='x', alpha=0.3, linestyle='--')
     
@@ -396,7 +402,7 @@ def generate_experiment4_patch_impact_scatter(runs, output_dir):
         ax2.text(width, bar.get_y() + bar.get_height()/2.,
                 f' {delta:+.1f}',
                 ha='left' if width >= 0 else 'right',
-                va='center', fontweight='bold', fontsize=9)
+                va='center', fontweight='bold', fontsize=18, color='black')
     
     plt.tight_layout()
     
@@ -460,7 +466,7 @@ def generate_experiment4_ranked_table(avg_pre, avg_post, deltas, output_dir):
                     colWidths=[0.08, 0.18, 0.14, 0.14, 0.12, 0.12, 0.18])
     
     table.auto_set_font_size(False)
-    table.set_fontsize(9)
+    table.set_fontsize(16)
     table.scale(1, 2.2)
     
     # Style header
@@ -484,7 +490,7 @@ def generate_experiment4_ranked_table(avg_pre, avg_post, deltas, output_dir):
             for j in range(6):
                 table[(i, j)].set_facecolor('#F2F2F2')
     
-    plt.title('Experiment 4: Ranked Patch Impact by Gadget Type', fontweight='bold', pad=20, fontsize=13)
+    plt.title('Experiment 4: Ranked Patch Impact by Gadget Type', fontweight='bold', pad=20, color='black')
     
     # Save
     pdf_path = output_dir / "figure_exp4_ranked_impact_table.pdf"
@@ -544,9 +550,9 @@ def generate_comprehensive_summary(runs, output_dir):
     """
     
     ax1.text(0.5, 0.5, summary_text, transform=ax1.transAxes,
-            fontsize=11, verticalalignment='center', horizontalalignment='center',
+            fontsize=18, verticalalignment='center', horizontalalignment='center',
             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.3),
-            family='monospace', fontweight='bold')
+            family='monospace', fontweight='bold', color='black')
     
     # 2. Gadgets per run
     ax2 = fig.add_subplot(gs[1, 0])
@@ -558,11 +564,11 @@ def generate_comprehensive_summary(runs, output_dir):
         height = bar.get_height()
         ax2.text(bar.get_x() + bar.get_width()/2., height,
                 f'{int(count)}',
-                ha='center', va='bottom', fontweight='bold')
+                ha='center', va='bottom', fontweight='bold', fontsize=18, color='black')
     
     ax2.axhline(y=avg_gadgets, color='red', linestyle='--', linewidth=2, label=f'Mean: {avg_gadgets:.1f}')
-    ax2.set_ylabel('Total Gadgets', fontweight='bold')
-    ax2.set_title('Gadget Count by Run', fontweight='bold')
+    ax2.set_ylabel('Total Gadgets', fontweight='bold', color='black')
+    ax2.set_title('Gadget Count by Run', fontweight='bold', color='black')
     ax2.legend()
     ax2.grid(axis='y', alpha=0.3)
     
@@ -585,9 +591,9 @@ def generate_comprehensive_summary(runs, output_dir):
     
     wedges, texts, autotexts = ax3.pie(sizes, labels=labels, autopct='%1.1f%%',
                                         colors=colors_pie, startangle=90,
-                                        textprops={'fontsize': 9, 'weight': 'bold'})
+                                        textprops={'fontsize': 18, 'weight': 'bold', 'color': 'black'})
     
-    ax3.set_title('Gadget Type Distribution', fontweight='bold')
+    ax3.set_title('Gadget Type Distribution', fontweight='bold', color='black')
     
     # 4. Run variance
     ax4 = fig.add_subplot(gs[2, 0])
@@ -600,9 +606,9 @@ def generate_comprehensive_summary(runs, output_dir):
                      alpha=0.3, color='gray', label='±1 Std Dev')
     ax4.axhline(y=avg_gadgets, color='blue', linestyle='--', linewidth=2, alpha=0.5)
     
-    ax4.set_xlabel('Run Number', fontweight='bold')
-    ax4.set_ylabel('Gadget Count', fontweight='bold')
-    ax4.set_title('Cross-Run Variance', fontweight='bold')
+    ax4.set_xlabel('Run Number', fontweight='bold', color='black')
+    ax4.set_ylabel('Gadget Count', fontweight='bold', color='black')
+    ax4.set_title('Cross-Run Variance', fontweight='bold', color='black')
     ax4.set_xticks(x)
     ax4.legend()
     ax4.grid(alpha=0.3)
@@ -626,7 +632,7 @@ def generate_comprehensive_summary(runs, output_dir):
     metrics_table = ax5.table(cellText=metrics_data, cellLoc='left', loc='center',
                              colWidths=[0.6, 0.4])
     metrics_table.auto_set_font_size(False)
-    metrics_table.set_fontsize(10)
+    metrics_table.set_fontsize(18)
     metrics_table.scale(1, 2.5)
     
     # Style
@@ -639,10 +645,10 @@ def generate_comprehensive_summary(runs, output_dir):
             for j in range(2):
                 metrics_table[(i, j)].set_facecolor('#F2F2F2')
     
-    ax5.set_title('Key Metrics Summary', fontweight='bold', pad=20)
+    ax5.set_title('Key Metrics Summary', fontweight='bold', pad=20, color='black')
     
     plt.suptitle('Scenario A: Comprehensive Gadget Analysis Summary', 
-                fontsize=16, fontweight='bold', y=0.98)
+                fontweight='bold', y=0.98, color='black')
     
     # Save
     pdf_path = output_dir / "figure_comprehensive_summary.pdf"
