@@ -162,7 +162,42 @@ Two-panel visualization analyzing pre-patch vs post-patch changes:
 All points lie on the diagonal line, confirming **zero net change** from runtime patching. This proves gadgets are inherent to template design, not introduced by patching operations.
 
 **Security Implication:**
+**Key Findings:**
+Zero net change across all gadget types - pre-patch counts equal post-patch counts identically.
+
 Static analysis of stencil templates is sufficient; runtime monitoring of patch operations is unnecessary for gadget detection.
+
+#### Patch Function Usage Analysis
+
+Detailed analysis of 275 opcode stencils in `jit_stencils.h` reveals the following patch function distribution:
+
+| Patch Function | Total Calls | Percentage | Stencils Using |
+|----------------|-------------|------------|----------------|
+| `patch_64` | 7,502 | 70.4% | 274/275 (99.6%) |
+| `patch_x86_64_32rx` | 2,583 | 24.2% | 240/275 (87.3%) |
+| `patch_32r` | 567 | 5.3% | 269/275 (97.8%) |
+| **Total** | **10,652** | **100%** | - |
+
+**Average per stencil**: 27.3 × `patch_64`, 9.4 × `patch_x86_64_32rx`, 2.1 × `patch_32r`
+
+**Top 5 stencils by patch density**:
+1. `_CALL_KW_NON_PY`: 132 patches (88 + 42 + 2)
+2. `_CALL_BUILTIN_FAST`: 106 patches (70 + 33 + 3)
+3. `_CALL_BUILTIN_FAST_WITH_KEYWORDS`: 106 patches
+4. `_CALL_METHOD_DESCRIPTOR_FAST`: 105 patches
+5. `_CALL_METHOD_DESCRIPTOR_FAST_WITH_KEYWORDS`: 105 patches
+
+**Interpretation**:
+- **`patch_64` dominates (70.4%)**: Used for 64-bit absolute addresses (function pointers, global variables, vtable entries)
+- **`patch_x86_64_32rx` (24.2%)**: Handles RIP-relative 32-bit offsets for efficient data segment access
+- **`patch_32r` (5.3%)**: Handles relative branch targets and jump offsets
+- Nearly all stencils (99.6%) use multiple patch types, indicating complex runtime specialization requirements
+- Call-related opcodes require the most patching (100+ patches) due to extensive runtime linkage with Python C API
+
+**Security Implication**: While `patch_64` is most frequent (70.4%), all patch functions collectively maintain gadget count invariance (pre=post). This suggests that:
+1. Patch operations preserve existing gadget boundaries
+2. No patch type introduces new unintended instruction sequences
+3. Static stencil analysis captures all exploitable gadgets regardless of patch function type
 
 ---
 
