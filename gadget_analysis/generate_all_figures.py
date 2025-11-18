@@ -535,7 +535,7 @@ def generate_exp4_patch_function_comparison(patch_data, output_dir):
         for bar in bars:
             height = bar.get_height()
             ax1.text(bar.get_x() + bar.get_width() / 2., height,
-                    f'{height:.1f}%', ha='center', va='bottom', fontsize=18, color='black')
+                    f'{height:.1f}%', ha='center', va='bottom', fontsize=12, color='black')
     
     # Right: Absolute counts (log scale)
     static_vals = [static_data[pf] for pf in patch_funcs]
@@ -552,7 +552,7 @@ def generate_exp4_patch_function_comparison(patch_data, output_dir):
     ax2.set_xticks(x)
     ax2.set_xticklabels(['patch_64', 'patch_x86_\n64_32rx', 'patch_32r'], color='black')
     ax2.set_yscale('log')
-    ax2.legend(loc='upper right')
+    ax2.legend(loc='upper left', framealpha=0.95)
     ax2.grid(axis='y', alpha=0.3, linestyle='--', which='both')
     
     plt.tight_layout()
