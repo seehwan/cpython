@@ -552,7 +552,6 @@ def generate_exp4_patch_function_comparison(patch_data, output_dir):
     ax2.set_xticks(x)
     ax2.set_xticklabels(['patch_64', 'patch_x86_\n64_32rx', 'patch_32r'], color='black')
     ax2.set_yscale('log')
-    ax2.legend(loc='upper left', fontsize=16, framealpha=0.95)
     ax2.grid(axis='y', alpha=0.3, linestyle='--', which='both')
     
     plt.tight_layout()
