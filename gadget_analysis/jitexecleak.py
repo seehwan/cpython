@@ -70,7 +70,53 @@ def leak_executor_jit(func):
     if jit_size == 0:
         raise RuntimeError(f"JIT code size is 0 for executor at offset {found_offset}")
     
+    # Clamp size to actual mapped region to avoid segfaults
+    mapped_size = get_mapped_size(jit_addr, jit_size)
+    if mapped_size < jit_size:
+        # print(f"[WARN] JIT size clamped from {jit_size} to {mapped_size} (mapped region limit)")
+        jit_size = mapped_size
+    
     return jit_addr, jit_size
+
+
+def get_mapped_size(start_addr, max_size):
+    """
+    Get the size of the readable memory segment starting at start_addr,
+    up to max_size.
+    """
+    try:
+        with open("/proc/self/maps", "r") as f:
+            for line in f:
+                parts = line.split()
+                if not parts:
+                    continue
+                
+                # Parse address range "start-end"
+                range_str = parts[0]
+                perms = parts[1]
+                
+                if "-" not in range_str:
+                    continue
+                    
+                s_str, e_str = range_str.split("-")
+                seg_start = int(s_str, 16)
+                seg_end = int(e_str, 16)
+                
+                # Check if start_addr is in this segment
+                if seg_start <= start_addr < seg_end:
+                    # Check if readable
+                    if "r" not in perms:
+                        return 0
+                    
+                    # Calculate available size in this segment
+                    available = seg_end - start_addr
+                    clamped = min(available, max_size)
+                    return clamped
+    except Exception:
+        pass
+    
+    # Fallback: return max_size if maps cannot be read
+    return max_size
 
 
 def find_all_executors(func):
